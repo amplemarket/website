@@ -1,3 +1,4 @@
+console.log("CENAS");
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 document.addEventListener('DOMContentLoaded', () => {
   (function (windowRef, documentRef, fileLocation, functionName) {
