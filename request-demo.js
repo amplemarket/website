@@ -123,8 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   enrichRes = null;
                 }
                 
-                let partnerKey;
-                if(growsumo.data.partner_key) partnerKey = growsumo.data.partner_key;
+                let partnerKey = growsumo.data.partner_key;
 
                 enrichedData = {
                   title: enrichRes ? enrichRes.title : null,
@@ -135,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   company_location: enrichRes && enrichRes.company ? enrichRes.company.location : null,
                   is_b2b: enrichRes && enrichRes.company ? enrichRes.company.is_b2b : null,
                   is_b2c: enrichRes && enrichRes.company ? enrichRes.company.is_b2c : null,
-                  partner_key: partnerKey ? partnerKey : null,
+                  partner_key: partnerKey,
                   // technologies: enrichRes && enrichRes.company ? enrichRes.company.technologies.join(', ') : null,
                 };
 
