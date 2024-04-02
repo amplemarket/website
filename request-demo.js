@@ -1,13 +1,13 @@
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   (function (windowRef, documentRef, fileLocation, functionName) {
-    windowRef['LeanDataCalendaringObjName'] = functionName;
+    windowRef["LeanDataCalendaringObjName"] = functionName;
     windowRef[functionName] = (...args) => {
       windowRef[functionName].variables = args;
     };
-    const scriptElement = documentRef.createElement('script');
-    const targetScript = document.getElementsByTagName('script')[0];
-    const targetHead = document.getElementsByTagName('head')[0];
+    const scriptElement = documentRef.createElement("script");
+    const targetScript = document.getElementsByTagName("script")[0];
+    const targetHead = document.getElementsByTagName("head")[0];
     scriptElement.async = 1;
     scriptElement.src = fileLocation;
     if (targetScript) {
@@ -18,11 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
   })(
     window,
     document,
-    'https://app.leandata.com/js-snippet/ld_calendaring.js',
-    'LDBookIt'
+    "https://app.leandata.com/js-snippet/ld_calendaring.js",
+    "LDBookIt"
   );
   // TODO: replace values below with your SFDC id and BookIt node name
-  LDBookIt('00D5I000000Fr4cUAC', 'New Inbound Lead', false, {
+  LDBookIt("00D5I000000Fr4cUAC", "New Inbound Lead", false, {
     apiRoutingOn: true,
     popupModalOn: true,
   });
@@ -34,14 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attaching BookIt process to your form submit button
     const attachToForm = () => {
       let registered = false;
-      console.log('Attempting to attach to form');
-      const myForm = document.querySelector('#email-form');
+      console.log("Attempting to attach to form");
+      const myForm = document.querySelector("#email-form");
       if (myForm != null) {
         registered = true;
         // TODO: Verify selector below
         myForm
           .querySelector('input[type="submit"]')
-          .addEventListener('click', async (event) => {
+          .addEventListener("click", async (event) => {
             if (!isSubmitting) {
               event.preventDefault();
 
@@ -54,41 +54,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
               // make an array of invalid domains
               const invalidDomains = [
-                'gmail.com',
-                'yahoo.com',
-                'hotmail.com',
-                'outlook.com',
+                "gmail.com",
+                "yahoo.com",
+                "hotmail.com",
+                "outlook.com",
               ];
 
               // validate email field
               // get the email field
-              const email = $('.business-only-email-field');
+              const email = $(".business-only-email-field");
               // split email at '@' character to get domain
-              let domainPart = email.val().split('@')[1];
+              let domainPart = email.val().split("@")[1];
               // convert the domain to lowercase before comparing, just in case the user typed it in caps
               domainPart = domainPart.toLowerCase();
               // if the domain exists in the invalidDomains array
               if (invalidDomains.indexOf(domainPart) !== -1) {
                 // clear email field
-                email.val('');
+                email.val("");
                 // add a 'use business mail' placeholder
-                email.attr('placeholder', 'Please enter a business email');
+                email.attr("placeholder", "Please enter a business email");
                 // add the 'no-pea-message' class to show the error message
-                $('.no-pea-message').show();
+                $(".no-pea-message").show();
 
                 // prevent form submission
                 return false;
               } else {
                 // else if email is not invalid
                 // remove the 'no-pea-message' class and hide the error message
-                $('.no-pea-message').hide();
+                $(".no-pea-message").hide();
                 // make a POST fetch request to validate the email
                 const response = await fetch(
-                  'https://app.amplemarket.com/api/v1/amplemarket_inbounds/validate_email',
+                  "https://app.amplemarket.com/api/v1/amplemarket_inbounds/validate_email",
                   {
-                    method: 'POST',
+                    method: "POST",
                     headers: {
-                      'Content-Type': 'application/json',
+                      "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ email: email.val() }),
                   }
@@ -98,11 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // if the request returns a 400 status or a "valid"=false response, don't proceed any further
                 if (response.status === 400 || data.valid === false) {
                   // clear email field
-                  email.val('');
+                  email.val("");
                   // set the error message
                   email.attr(
-                    'placeholder',
-                    'Please enter a real business email'
+                    "placeholder",
+                    "Please enter a real business email"
                   );
                   // focus the email field
                   email.focus();
@@ -116,24 +116,44 @@ document.addEventListener('DOMContentLoaded', () => {
                       email.val()
                     )}`
                   );
-                  if (!enrichReq.ok) throw new Error('Failed to fetch');
+                  if (!enrichReq.ok) throw new Error("Failed to fetch");
                   enrichRes = await enrichReq.json();
                 } catch (error) {
-                  console.error('Error fetching enriched data:', error);
+                  console.error("Error fetching enriched data:", error);
                   enrichRes = null;
                 }
-                
+
                 let partnerKey = growsumo.data.partner_key;
 
                 enrichedData = {
                   title: enrichRes ? enrichRes.title : null,
                   person_location: enrichRes ? enrichRes.location : null,
-                  size: enrichRes && enrichRes.company ? enrichRes.company.size : null,
-                  sales_team_size_enriched: enrichRes && enrichRes.company && enrichRes.company.department_headcount ? enrichRes.company.department_headcount.sales : null,
-                  industry: enrichRes && enrichRes.company ? enrichRes.company.industry : null,
-                  company_location: enrichRes && enrichRes.company ? enrichRes.company.location : null,
-                  is_b2b: enrichRes && enrichRes.company ? enrichRes.company.is_b2b : null,
-                  is_b2c: enrichRes && enrichRes.company ? enrichRes.company.is_b2c : null,
+                  size:
+                    enrichRes && enrichRes.company
+                      ? enrichRes.company.size
+                      : null,
+                  sales_team_size_enriched:
+                    enrichRes &&
+                    enrichRes.company &&
+                    enrichRes.company.department_headcount
+                      ? enrichRes.company.department_headcount.sales
+                      : null,
+                  industry:
+                    enrichRes && enrichRes.company
+                      ? enrichRes.company.industry
+                      : null,
+                  company_location:
+                    enrichRes && enrichRes.company
+                      ? enrichRes.company.location
+                      : null,
+                  is_b2b:
+                    enrichRes && enrichRes.company
+                      ? enrichRes.company.is_b2b
+                      : null,
+                  is_b2c:
+                    enrichRes && enrichRes.company
+                      ? enrichRes.company.is_b2c
+                      : null,
                   partner_key: partnerKey,
                   // technologies: enrichRes && enrichRes.company ? enrichRes.company.technologies.join(', ') : null,
                 };
@@ -154,22 +174,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const BookItAPIRouting = (myForm) => {
       let options = {
-        MAType: 'Custom',
+        MAType: "Custom",
         formHandle: myForm,
         onError: (error) => {
           // TODO: Add Zap flow trigger here
           postFullRequestData();
         },
         afterSubmit: async (formData) => {
-          growsumo.data.name = formData['Name'];
-          growsumo.data.email = formData['Company-Email'];
-          let domainPart = formData['Company-Email'].split('@')[1];
+          growsumo.data.name = formData["Name"];
+          growsumo.data.email = formData["Company-Email"];
+          let domainPart = formData["Company-Email"].split("@")[1];
           domainPart = domainPart.toLowerCase();
           growsumo.data.customer_key = domainPart;
           await growsumo.createSignup();
 
           setTimeout(() => {
-            window.location.href = '/thanks-demo';
+            window.location.href = "/thanks-demo";
           }, 150);
         },
         afterRouting: (formData, responseData) => {
@@ -188,11 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         customValidation: () => {
           // TODO: Add form validation to stop LD from routing invalid data. Sample validation provided below.
-          const requiredFields = myForm.querySelectorAll('[required]');
+          const requiredFields = myForm.querySelectorAll("[required]");
           console.log(requiredFields);
           let isValid = true;
           requiredFields.forEach((field) => {
-            if (field.value === '') {
+            if (field.value === "") {
               isValid = false;
             }
           });
@@ -203,13 +223,13 @@ document.addEventListener('DOMContentLoaded', () => {
           [formData, formHiddenFieldNames] = CollectFormData(myForm);
           //splits Name field into first and last by first space
           let name = formData.Name.trim();
-          if (name.includes(' ')) {
-            const [firstName, ...lastName] = name.split(' ');
+          if (name.includes(" ")) {
+            const [firstName, ...lastName] = name.split(" ");
             formData.firstname = firstName;
-            formData.lastname = lastName.join(' ');
+            formData.lastname = lastName.join(" ");
           } else {
             formData.firstname = name;
-            formData.lastname = '';
+            formData.lastname = "";
           }
 
           // Merge enrichedData with formData
@@ -242,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }, */
         formSubmitter: () => {
           isSubmitting = true;
-          console.log('is submitting');
+          console.log("is submitting");
           // TODO: Verify selector below
           myForm.querySelector('input[type="submit"]').click();
         },
@@ -261,36 +281,37 @@ document.addEventListener('DOMContentLoaded', () => {
       let elem = elements[i];
       let apiName = elem.name;
       switch (elem.type) {
-        case 'text':
-        case 'textarea':
-        case 'number':
-        case 'email':
+        case "text":
+        case "textarea":
+        case "number":
+        case "email":
           formData[apiName] = elem.value;
-          break;O
-        case 'select-one':
+          break;
+          O;
+        case "select-one":
           const selectedIndex = elem.selectedIndex;
           apiName = elem.name;
           formData[apiName] = selectedIndex
             ? elem.options[elem.selectedIndex].value
-            : '';
+            : "";
           break;
-        case 'checkbox':
+        case "checkbox":
           formData[apiName] = elem.checked;
           break;
-        case 'radio':
+        case "radio":
           if (elem.checked && elem.nextElementSibling) {
             formData[apiName] = elem.nextElementSibling.textContent;
           }
           break;
-        case 'hidden':
+        case "hidden":
           formData[apiName] = elem.value;
           hiddenFieldNames.add(apiName);
           break;
       }
     }
     // TODO: ensure you are getting all the data you need from the form
-    console.log('formData', formData);
-    console.log('hiddenFieldNames', hiddenFieldNames);
+    console.log("formData", formData);
+    console.log("hiddenFieldNames", hiddenFieldNames);
     return [formData, hiddenFieldNames];
   };
 });
