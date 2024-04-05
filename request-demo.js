@@ -82,31 +82,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 // else if email is not invalid
                 // remove the 'no-pea-message' class and hide the error message
                 $(".no-pea-message").hide();
-                // make a POST fetch request to validate the email
-                const response = await fetch(
-                  "https://app.amplemarket.com/api/v1/amplemarket_inbounds/validate_email",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ email: email.val() }),
-                  }
-                );
-                // get the JSON response
-                const data = await response.json();
-                // if the request returns a 400 status or a "valid"=false response, don't proceed any further
-                if (response.status === 400 || data.valid === false) {
-                  // clear email field
-                  email.val("");
-                  // set the error message
-                  email.attr(
-                    "placeholder",
-                    "Please enter a real business email"
+
+                let data = null;
+
+                try {
+                  // make a POST fetch request to validate the email
+                  const response = await fetch(
+                    "https://app.amplemarket.com/api/v1/amplemarket_inbounds/validate_email",
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ email: email.val() }),
+                    }
                   );
-                  // focus the email field
-                  email.focus();
-                  return false;
+                  // get the JSON response
+                  data = await response.json();
+
+                  // if the request returns a 400 status or a "valid"=false response, don't proceed any further
+                  if (response.status === 400 || data?.valid === false) {
+                    // clear email field
+                    email.val("");
+                    // set the error message
+                    email.attr(
+                      "placeholder",
+                      "Please enter a real business email"
+                    );
+                    // focus the email field
+                    email.focus();
+                    return false;
+                  }
+                } catch (error) {
+                  console.log(error);
                 }
 
                 let enrichRes;
