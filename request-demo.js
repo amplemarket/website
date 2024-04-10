@@ -133,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
                   enrichRes = null;
                 }
 
-                console.log(emailStatus);
                 let partnerKey = growsumo.data.partner_key;
 
                 enrichedData = {
