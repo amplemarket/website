@@ -84,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 $(".no-pea-message").hide();
 
                 let data = null;
+                let emailStatus = null;
 
                 try {
                   // make a POST fetch request to validate the email
@@ -99,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   );
                   // get the JSON response
                   data = await response.json();
+                  emailStatus = data?.status;
 
                   // if the request returns a 400 status or a "valid"=false response, don't proceed any further
                   if (response.status === 400 || data?.valid === false) {
@@ -131,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   enrichRes = null;
                 }
 
+                console.log(emailStatus);
                 let partnerKey = growsumo.data.partner_key;
 
                 enrichedData = {
@@ -163,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       ? enrichRes.company.is_b2c
                       : null,
                   partner_key: partnerKey,
+                  email_status: emailStatus,
                   // technologies: enrichRes && enrichRes.company ? enrichRes.company.technologies.join(', ') : null,
                 };
 
