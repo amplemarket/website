@@ -70,17 +70,37 @@ document.addEventListener("DOMContentLoaded", () => {
               domainPart = domainPart.toLowerCase();
               // if the domain exists in the invalidDomains array
               if (invalidDomains.indexOf(domainPart) !== -1) {
-                // clear email field
-                email.val("");
-                // add a 'use business mail' placeholder
-                email.attr("placeholder", "Please enter a business email");
                 // add the 'no-pea-message' class to show the error message
+                email.addClass("has-error");
+                // focus the email field
+                email.focus();
+                email.on("input", () => {
+                  // remove error message when user restarts typing
+                  email.removeClass("has-error");
+                  $(".no-pea-message").hide();
+                });
                 $(".no-pea-message").show();
 
                 // prevent form submission
                 return false;
               } else {
                 // else if email is not invalid
+                const loadingScreen = document.querySelector(".loading-screen");
+                const emailErrorMsg = document.querySelector(
+                  ".email-form-error-message"
+                );
+                loadingScreen.style.display = "flex";
+                loadingScreen.style.opacity = 1;
+                emailErrorMsg.style.display = "none";
+                email.removeClass("has-error");
+                setTimeout(
+                  () =>
+                    (loadingScreen.querySelector(
+                      ".loading-text"
+                    ).style.opacity = 0.5),
+                  2000
+                );
+
                 // remove the 'no-pea-message' class and hide the error message
                 $(".no-pea-message").hide();
 
@@ -105,15 +125,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // if the request returns a 400 status or a "valid"=false response, don't proceed any further
                   if (response.status === 400 || data?.valid === false) {
-                    // clear email field
-                    email.val("");
+                    loadingScreen.style.display = "none";
                     // set the error message
-                    email.attr(
-                      "placeholder",
-                      "Please enter a real business email"
-                    );
+                    emailErrorMsg.style.display = "block";
+                    email.addClass("has-error");
                     // focus the email field
                     email.focus();
+                    email.on("input", () => {
+                      // remove error message when user restarts typing
+                      email.removeClass("has-error");
+                      emailErrorMsg.style.display = "none";
+                    });
                     return false;
                   }
                 } catch (error) {
