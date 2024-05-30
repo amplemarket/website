@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "hotmail.com",
                 "outlook.com",
                 "msn.com",
+                "icloud.com",
               ];
 
               // validate email field
