@@ -157,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 let partnerKey = growsumo.data.partner_key;
+                let hiddenField = $(".last-name").val();
 
                 enrichedData = {
                   title: enrichRes ? enrichRes.title : null,
@@ -188,6 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       ? enrichRes.company.is_b2c
                       : null,
                   partner_key: partnerKey,
+                  hidden_field: hiddenField,
                   email_status: emailStatus,
                   // technologies: enrichRes && enrichRes.company ? enrichRes.company.technologies.join(', ') : null,
                 };
