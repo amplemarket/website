@@ -54,12 +54,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
               // make an array of invalid domains
               const invalidDomains = [
-                "gmail.com",
-                "yahoo.com",
-                "hotmail.com",
-                "outlook.com",
-                "msn.com",
-                "icloud.com",
+                "gmail.",
+                "yahoo.",
+                "hotmail.",
+                "outlook.",
+                "msn.",
+                "icloud.",
               ];
 
               // validate email field
