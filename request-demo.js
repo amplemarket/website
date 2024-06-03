@@ -91,42 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // prevent form submission
                 return false;
-              }
-              //}
-              // make an array of invalid domains
-              /*const invalidDomains = [
-                "gmail.",
-                "yahoo.",
-                "hotmail.",
-                "outlook.",
-                "msn.",
-                "icloud.",
-              ];
-
-              // validate email field
-              // get the email field
-              const email = $(".business-only-email-field");
-              // split email at '@' character to get domain
-              let domainPart = email.val().split("@")[1];
-              // convert the domain to lowercase before comparing, just in case the user typed it in caps
-              domainPart = domainPart.toLowerCase();
-              // if the domain exists in the invalidDomains array
-              if (invalidDomains.indexOf(domainPart) !== -1) {
-                // add the 'no-pea-message' class to show the error message
-                email.addClass("has-error");
-                // focus the email field
-                email.focus();
-                email.on("input", () => {
-                  // remove error message when user restarts typing
-                  email.removeClass("has-error");
-                  $(".no-pea-message").hide();
-                });
-                $(".no-pea-message").show();
-
-                // prevent form submission
-                return false;
-              }*/
-              else {
+              } else {
                 // else if email is not invalid
                 const loadingScreen = document.querySelector(".loading-screen");
                 const emailErrorMsg = document.querySelector(
