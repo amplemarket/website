@@ -1,4 +1,4 @@
-console.log("cenas");
+console.log("v1");
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 document.addEventListener("DOMContentLoaded", () => {
   (function (windowRef, documentRef, fileLocation, functionName) {
@@ -60,6 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 "outlook.",
                 "msn.",
                 "icloud.",
+                "mail.",
+                "aol.",
+                "qq.",
               ];
 
               // validate email field
