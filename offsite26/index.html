@@ -1,0 +1,3347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <title>Amplemarket offsite 2026 — Tenerife, Spain</title>
+    <meta property="og:title" content="Amplemarket offsite 2026 — Tenerife, Spain" />
+    <meta property="og:description" content="Experience Amplemarket's culture firsthand. Go behind the scenes to see how we build, collaborate, and celebrate together. We're hiring, join our team." />
+    <meta property="og:image" content="og-image.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="og-image.png" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400&display=swap');
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #f6f5f3;
+        font-family: 'Geist Mono', monospace;
+      }
+
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f6f5f3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 1;
+        transition: opacity 0.6s ease;
+      }
+
+      #loading-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.75rem;
+        opacity: 0;
+        animation: fadeIn 0.5s ease 0.2s forwards;
+      }
+      
+      #loading-content .loading-svgs {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      
+      #loading-text {
+        font-family: 'Geist Mono', monospace;
+        font-size: 0;
+        color: #021F51;
+        opacity: 0;
+        margin-left: 1rem;
+        letter-spacing: 0;
+        word-spacing: 0;
+        display: inline-block;
+        line-height: 1;
+      }
+      
+      #loading-text.visible {
+        opacity: 1;
+      }
+      
+      #loading-text span {
+        display: inline-block;
+        font-size: 0.75rem;
+        animation: letterShimmer 2s infinite;
+        animation-fill-mode: both;
+        margin: 0;
+        padding: 0;
+        vertical-align: baseline;
+      }
+      
+      @keyframes letterShimmer {
+        0% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.3;
+        }
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+
+      #loading-logo {
+        opacity: 0;
+        animation: fadeInLogo 0.5s ease 0.4s forwards;
+        height: 58px;
+        width: 70.89px; /* Maintains aspect ratio: 58 * (33/27) */
+      }
+
+      @keyframes fadeInLogo {
+        to {
+          opacity: 1;
+        }
+      }
+
+      #loading-globe {
+        opacity: 0;
+        animation: fadeInGlobe 0.5s ease 0.6s forwards;
+        width: 60px;
+        height: 60px;
+      }
+
+      @keyframes fadeInGlobe {
+        to {
+          opacity: 1;
+        }
+      }
+
+
+      body.loading #canvas,
+      body.loading #coordinates,
+      body.loading .header-pill,
+      body.loading .segmented-control,
+      body.loading .instruction-item {
+        opacity: 0;
+      }
+
+      body:not(.loading) #canvas {
+        opacity: 1;
+        transition: opacity 0.5s ease;
+      }
+
+      body:not(.loading) #coordinates,
+      body:not(.loading) .header-pill,
+      body:not(.loading) .segmented-control,
+      body:not(.loading) .instruction-item {
+        opacity: 0;
+        transition: opacity 0.8s ease;
+      }
+
+      body:not(.loading).ui-visible #coordinates,
+      body:not(.loading).ui-visible .header-pill,
+      body:not(.loading).ui-visible .segmented-control,
+      body:not(.loading).ui-visible .instruction-item {
+        opacity: 1;
+      }
+
+      .canvas-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        opacity: 1;
+        transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        pointer-events: auto;
+      }
+
+      .canvas-wrapper.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+        display: block;
+      }
+
+      #canvas.dragging {
+        cursor: grabbing;
+      }
+
+      .coordinates-wrapper {
+        position: fixed;
+        bottom: 1.25rem;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        pointer-events: none;
+        max-width: 112.5rem;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+
+      #coordinates {
+        background: rgba(246, 245, 243, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50rem;
+        padding: 0.375rem;
+        padding-right: 1.125rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        height: 3rem;
+      }
+
+      #coordinates.view-transition {
+        transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      #coordinates.view-hidden {
+        opacity: 0;
+      }
+
+      #coordinates::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      #coordinates svg,
+      #coordinates span {
+        position: relative;
+        z-index: 1;
+      }
+
+      #coordinates svg {
+        flex-shrink: 0;
+      }
+
+      #coord-text {
+        min-width: 24ch;
+      }
+
+      .instructions-wrapper {
+        position: fixed;
+        bottom: 1.25rem;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        pointer-events: none;
+        max-width: 112.5rem;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+      }
+
+
+      #instructions {
+        position: relative;
+        pointer-events: none;
+      }
+
+      /* Careers Modal */
+      .careers-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        visibility: hidden;
+      }
+
+      .careers-modal:not(.hidden) {
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .careers-modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #021F510d;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        opacity: 0;
+        transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+        pointer-events: none;
+      }
+
+      .careers-modal:not(.hidden) .careers-modal-overlay {
+        opacity: 1;
+      }
+
+      .careers-modal-content {
+        position: relative;
+        z-index: 1;
+        background: rgba(246, 245, 243, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 1.5rem;
+        padding: 1.75rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        max-width: 20rem;
+        width: calc(100% - 3rem);
+        text-align: center;
+        transform: scale(0.95);
+        opacity: 0;
+        transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .careers-modal:not(.hidden) .careers-modal-content {
+        opacity: 1;
+      }
+
+      .careers-modal:not(.hidden) .careers-modal-content {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      .careers-modal.hidden .careers-modal-content {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      .careers-modal-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 1.5rem 1.5rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .careers-modal-logo {
+        position: relative;
+        z-index: 1;
+        width: 2rem;
+        height: 2rem;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .careers-modal-logo svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .careers-modal-text {
+        position: relative;
+        z-index: 1;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        margin: 0;
+        line-height: 1.5;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .careers-modal-text-line {
+        margin: 0;
+      }
+
+      .careers-modal-button {
+        position: relative;
+        z-index: 1;
+        display: inline-block;
+        background: #021F51;
+        color: #fff;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50rem;
+        text-decoration: none;
+        transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        border: none;
+        cursor: pointer;
+        width: fit-content;
+        align-self: center;
+      }
+
+      .careers-modal-button:hover {
+        background: #0D3273;
+      }
+
+      .careers-modal-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: transparent;
+        border: none;
+        color: #021F51;
+        cursor: pointer;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        z-index: 2;
+        padding: 0;
+      }
+
+      .careers-modal-close svg {
+        width: 14px;
+        height: 14px;
+        display: block;
+      }
+
+      .careers-modal-close svg path {
+        fill: currentColor;
+      }
+
+      .careers-modal-close:hover {
+        background: rgba(17, 17, 17, 0.05);
+      }
+
+      /* Careers Dynamic Island */
+      .careers-island-wrapper {
+        position: fixed;
+        top: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      @media (max-width: 992px) {
+        .careers-island-wrapper {
+          top: auto;
+          bottom: 1.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      }
+
+      .careers-island {
+        position: relative;
+        transform: translateY(0.75rem) scale(0.9);
+        opacity: 0;
+        transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+      }
+
+      .careers-island[data-mounted="true"] {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .careers-island[data-mounted="false"] {
+        transform: translateY(-0.75rem) scale(0.9);
+        opacity: 0;
+      }
+
+      .careers-island[data-mounted="true"][data-pushed="true"] {
+        transform: translateY(-0.625rem) scale(0.95);
+      }
+
+      .careers-island-content {
+        position: relative;
+        background: rgba(246, 245, 243, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50rem;
+        padding: 0.375rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        height: 3rem;
+        min-width: 18rem;
+        filter: blur(4px);
+        transition: filter 400ms cubic-bezier(0.34, 1.56, 0.64, 1), background 400ms cubic-bezier(0.34, 1.56, 0.64, 1), backdrop-filter 400ms cubic-bezier(0.34, 1.56, 0.64, 1), -webkit-backdrop-filter 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .careers-island[data-mounted="true"] .careers-island-content {
+        filter: blur(0);
+      }
+
+      .careers-island[data-mounted="false"] .careers-island-content {
+        filter: blur(4px);
+      }
+
+      .careers-island[data-mounted="true"][data-pushed="true"] .careers-island-content {
+        background: rgba(246, 245, 243, 0.8);
+        backdrop-filter: blur(10px) saturate(180%);
+        -webkit-backdrop-filter: blur(10px) saturate(180%);
+      }
+
+      .careers-island-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .careers-island-content > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .careers-island-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .careers-island-text {
+        position: relative;
+        z-index: 1;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        margin: 0;
+        line-height: 1.5;
+        white-space: nowrap;
+        flex: 1;
+      }
+
+      .careers-island-button {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #021F51;
+        color: #fff;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 50rem;
+        text-decoration: none;
+        transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 2.25rem;
+      }
+
+      .careers-island-button:hover {
+        background: #0D3273;
+      }
+
+      .careers-island-close {
+        position: relative;
+        z-index: 1;
+        background: transparent;
+        border: none;
+        color: #021F51;
+        cursor: pointer;
+        width: 2.25rem;
+        min-height: 2.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .careers-island-close svg {
+        width: 14px;
+        height: 14px;
+        display: block;
+      }
+
+      .careers-island-close svg path {
+        fill: currentColor;
+      }
+
+      .careers-island-close:hover {
+        background: rgba(17, 17, 17, 0.05);
+      }
+
+      /* Toast System */
+      .toast-container {
+        position: fixed;
+        top: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1001;
+        pointer-events: none;
+      }
+
+      @media (max-width: 1080px) {
+        .toast-container {
+          left: 0;
+          right: 0;
+          max-width: 112.5rem;
+          margin: 0 auto;
+          display: flex;
+          justify-content: center;
+          transform: none;
+        }
+      }
+
+      @media (max-width: 992px) {
+        .toast-container {
+          top: auto;
+          bottom: 1.5rem;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+        }
+        .toast-container .toast {
+          top: auto;
+          bottom: 0;
+        }
+      }
+
+      .toast {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%) translateY(0.75rem) scale(0.9);
+        opacity: 0;
+        transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+        will-change: transform;
+      }
+
+      .toast[data-mounted="true"] {
+        transform: translateX(-50%) translateY(0) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .toast[data-mounted="false"] {
+        transform: translateX(-50%) translateY(-0.75rem) scale(0.9);
+        opacity: 0;
+      }
+
+      .toast-content {
+        position: relative;
+        background: rgba(246, 245, 243, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50rem;
+        padding: 0.375rem 1.125rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        height: 3rem;
+        min-width: 18rem;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        white-space: nowrap;
+        filter: blur(4px);
+        transition: filter 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .toast[data-mounted="true"] .toast-content {
+        filter: blur(0);
+      }
+
+      .toast[data-mounted="false"] .toast-content {
+        filter: blur(4px);
+      }
+
+      .toast-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .toast-content > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .instructions-container {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+      }
+
+
+      .instruction-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        white-space: nowrap;
+        background: rgba(246, 245, 243, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50rem;
+        padding: 0.375rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        height: 3rem;
+      }
+
+      .instruction-item:not(.instruction-item-keyboard) {
+        padding-right: 1.125rem;
+      }
+
+      .instruction-item-keyboard {
+        padding-left: 1.125rem;
+      }
+
+      .instruction-item.view-transition {
+        transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .instruction-item.view-hidden {
+        opacity: 0;
+      }
+
+      .instruction-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .instruction-item > * {
+        position: relative;
+        z-index: 1;
+      }
+      
+
+      .icon-box {
+        position: relative;
+        background: #fafafa;
+        border-radius: 50%;
+        padding: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        flex-shrink: 0;
+        transition: background-color 150ms ease;
+      }
+
+      .icon-box svg path {
+        stroke-width: 1.5px;
+        stroke: currentColor;
+      }
+
+      .icon-box.active {
+        background-color: #021F51;
+      }
+
+      .icon-box.active svg {
+        color: #fff;
+      }
+
+      .icon-box.active svg path {
+        fill: #fff;
+        stroke: #fff;
+      }
+
+      .icon-box svg {
+        display: block;
+      }
+
+      .header-wrapper {
+        position: fixed;
+        top: 1.25rem;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        pointer-events: none;
+        max-width: 112.5rem;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+      }
+
+      #header {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+      }
+
+      .header-pill {
+        position: relative;
+        background: rgba(246, 245, 243, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50rem;
+        padding: 0.375rem 1.125rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        pointer-events: auto;
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        transition: opacity 0.8s ease, backdrop-filter 0.8s ease, -webkit-backdrop-filter 0.8s ease, box-shadow 0.8s ease, background 250ms cubic-bezier(0.22, 1, 0.36, 1), background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        height: 3rem;
+      }
+
+      .header-pill:not(.is-no-hover) {
+        width: 3rem;
+        padding: 0.375rem;
+        padding-bottom: 0.4375rem;
+        justify-content: center;
+      }
+
+      .header-pill-text-mobile {
+        display: none;
+      }
+      .header-pill-text-short {
+        display: none !important;
+      }
+
+      .header-pill::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .header-pill:hover {
+        background-color: rgba(246, 245, 243, 0.7);
+      }
+      .header-pill:hover::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(17, 17, 17, 0.05);
+        border-radius: 50rem;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .header-pill.is-no-hover:hover {
+        background-color: rgba(246, 245, 243, 0.7);
+      }
+      .header-pill.is-no-hover:hover::after {
+        display: none;
+      }
+
+      .header-pill svg,
+      .header-pill span {
+        position: relative;
+        z-index: 1;
+      }
+
+      .header-pill.is-no-hover span {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      .header-pill svg {
+        flex-shrink: 0;
+        display: block;
+      }
+
+      .header-pill svg path {
+        fill: none;
+        transition: fill 250ms cubic-bezier(0.22, 1, 0.36, 1), stroke 250ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .header-pill:hover svg path {
+        fill: #021F51;
+        stroke: #021F51;
+      }
+
+      .view-toggle-wrapper {
+        position: fixed;
+        top: 1.25rem;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        pointer-events: none;
+        max-width: 112.5rem;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .view-toggle-wrapper > * {
+        pointer-events: auto;
+      }
+
+      /* Tablet down: only grid experience, no 3D view toggle */
+      @media (max-width: 992px) {
+        .view-toggle-wrapper {
+          display: none !important;
+        }
+        .instructions-wrapper,
+        .coordinates-wrapper {
+          display: none !important;
+        }
+        .canvas-wrapper {
+          display: none !important;
+        }
+        .header-wrapper #header {
+          width: 100%;
+          max-width: 112.5rem;
+          margin: 0 auto;
+          padding: 0;
+          justify-content: space-between;
+        }
+      }
+
+      #view-toggle {
+        pointer-events: auto;
+      }
+
+      .segmented-control {
+        position: relative;
+        background: rgba(246, 245, 243, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50rem;
+        padding: 0.375rem;
+        box-shadow: 
+          0 26px 60px -6px rgba(17, 17, 17, 0.12),
+          0 28px 28px -14px rgba(17, 17, 17, 0.02),
+          0 6px 6px -3px rgba(17, 17, 17, 0.04),
+          0 1px 1px -0.5px rgba(17, 17, 17, 0.04),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+        height: 3rem;
+      }
+
+      .segmented-control::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        border-radius: 50rem 50rem 0 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .segmented-control-track {
+        position: relative;
+        display: flex;
+        gap: 0.25rem;
+        z-index: 1;
+      }
+
+      .segmented-control-tile {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: calc(50% - 0.125rem);
+        height: 100%;
+        background: #021F51;
+        border-radius: 50rem;
+        transition: transform 0.2s ease;
+        z-index: 0;
+      }
+
+      .segmented-control-track:has(#threejs-view-btn.active) .segmented-control-tile {
+        transform: translateX(0);
+      }
+
+      .segmented-control-track:has(#grid-view-btn.active) .segmented-control-tile {
+        transform: translateX(calc(100% + 0.25rem));
+      }
+
+      .segmented-control-btn {
+        position: relative;
+        z-index: 1;
+        background: transparent;
+        border: none;
+        border-radius: 50rem;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        color: #021F51;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+        flex: 1;
+        min-height: 2.25rem;
+      }
+
+      .segmented-control-btn:hover:not(.active) {
+        background-color: rgba(17, 17, 17, 0.05);
+      }
+
+      .segmented-control-btn.active {
+        color: #fff;
+      }
+
+      .segmented-control-btn.active:hover {
+        background-color: transparent;
+      }
+
+      .segmented-control-btn svg {
+        display: block;
+        width: 20px;
+        height: 20px;
+      }
+
+      #grid-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background: #f6f5f3;
+        z-index: 50;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      #grid-container.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #grid-container.hidden {
+        display: none;
+      }
+
+      .grid-view {
+        display: flex;
+        gap: 1.25rem;
+        max-width: 112.5rem;
+        margin: 0 auto;
+        padding: 5.5rem 1.25rem 1.5rem 1.25rem;
+        height: auto;
+        min-height: 100%;
+        box-sizing: border-box;
+      }
+
+      .grid-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        min-width: 0;
+      }
+
+      /* Mobile: smaller gap and padding (must come after base .grid-view / .grid-column) */
+      @media (max-width: 767px) {
+        .grid-view {
+          gap: 1rem;
+          padding: 5.5rem 1rem 1.5rem 1rem;
+        }
+        .grid-column {
+          gap: 1rem;
+        }
+        .header-wrapper {
+          padding: 0 1rem;
+        }
+        .toast-container {
+          bottom: 1rem;
+        }
+        .careers-island-wrapper {
+          bottom: 1rem;
+        }
+      }
+
+      @media (max-width: 479px) {
+        #header {
+          gap: 0.25rem;
+        }
+      }
+
+      /* Very narrow: Tenerife text inside logo pill, hide separate Tenerife pill */
+      @media (max-width: 374px) {
+        .header-pill-text-full {
+          display: none !important;
+        }
+        .header-pill-text-short {
+          display: inline !important;
+        }
+        .header-pill:not(.is-no-hover) {
+          width: auto;
+          padding: 0.375rem 1rem;
+          padding-bottom: 0.4375rem;
+          justify-content: flex-start;
+          gap: 0.75rem;
+        }
+        .header-wrapper {
+          padding: 0 1rem;
+        }
+        .header-pill-tenerife {
+          display: none !important;
+        }
+      }
+
+      .grid-item {
+        display: flex;
+        flex-direction: column;
+        background: transparent;
+      }
+
+      .grid-item-label {
+        position: relative;
+        margin-top: 0.375rem;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.75rem;
+        color: #021F51;
+        white-space: nowrap;
+      }
+
+      .grid-item-image-wrapper {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .grid-item-image-wrapper.is-portrait {
+        aspect-ratio: 3 / 4;
+      }
+
+      .grid-item-image-wrapper.is-landscape {
+        aspect-ratio: 3 / 2;
+      }
+
+      .grid-item-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 600ms cubic-bezier(0.33, 1, 0.68, 1), background-color 200ms ease;
+      }
+
+      .grid-item-placeholder.visible {
+        opacity: 1;
+      }
+
+      /* Ensure placeholder is visible before image loads (img sits on top with opacity 0) */
+      .grid-item-image-wrapper .grid-item-placeholder {
+        z-index: 0;
+      }
+      .grid-item-image-wrapper img {
+        position: relative;
+        z-index: 1;
+      }
+
+      .grid-item-placeholder.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .grid-item img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 600ms cubic-bezier(0.33, 1, 0.68, 1);
+      }
+
+      .grid-item img.loaded {
+        opacity: 1;
+      }
+
+      .grid-empty-state {
+        grid-column: 1 / -1;
+        padding: 3rem 1.25rem;
+        text-align: center;
+        font-family: 'Geist Mono', monospace;
+        font-size: 0.875rem;
+        color: #021F51;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading-screen">
+      <div id="loading-content">
+        <div class="loading-svgs">
+          <svg id="loading-logo" viewBox="-1 -1 32 26" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <path d="M17.6522 15.0642V18.9216C17.6522 21.7264 19.9312 24 22.7427 24H28.9916C29.5485 24 30 23.5496 30 22.994V12.2402C30 11.6846 29.5485 11.2342 28.9916 11.2342H22.8548C21.9266 11.2342 21.174 10.4834 21.174 9.5574V1.006C21.174 0.4504 20.7225 0 20.1656 0H13.463C13.1565 0 12.8666 0.1392 12.6752 0.378L0.220525 15.9278C0.0777851 16.1062 0 16.3276 0 16.5558V22.9938C0 23.5494 0.451474 23.9998 1.0084 23.9998H7.71055C8.01708 23.9998 8.30697 23.8606 8.49843 23.6218L15.8557 14.436C16.451 13.6928 17.652 14.1128 17.652 15.064L17.6522 15.0642Z" stroke="#021F51" stroke-width="1" fill="none" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <svg id="loading-globe" width="60" height="60" viewBox="-1 -1 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <clipPath id="loading-globe-clip">
+                <circle cx="21.5" cy="21.5" r="21.5" />
+              </clipPath>
+            </defs>
+            <circle cx="21.5" cy="21.5" r="21" stroke="#021F51" stroke-width="1" vector-effect="non-scaling-stroke"/>
+            <g clip-path="url(#loading-globe-clip)">
+              <path id="loading-meridian" d="M21.5 0.5Q27 10.5 27 21.5Q27 32.5 21.5 42.5" stroke="#021F51" stroke-width="1" stroke-linecap="round" stroke-dasharray="1 3" fill="none" vector-effect="non-scaling-stroke"/>
+              <path id="loading-equator" d="M0 21.5Q10.5 27 21.5 27Q32.5 27 43 21.5" stroke="#021F51" stroke-width="1" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
+            </g>
+            <path d="M23 20L20 23" stroke="#021F51" stroke-width="1" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M20 20L23 23" stroke="#021F51" stroke-width="1" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+        </div>
+        <div id="loading-text">Travelling to Tenerife...</div>
+      </div>
+    </div>
+    <div class="view-toggle-wrapper ui-wrapper">
+      <div id="view-toggle">
+        <div class="segmented-control">
+          <div class="segmented-control-track">
+            <div class="segmented-control-tile"></div>
+            <button id="threejs-view-btn" class="segmented-control-btn active">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+                <path d="M80.5 181.5L320.3 43L560.1 181.5L560.1 458.5L320.3 597L80.5 458.5L80.5 181.5zM512.2 190.7L320.3 80L128.5 190.8L320.3 301.5L512.2 190.8zM112.5 218.5L112.5 440L304.3 550.8L304.3 329.3L112.5 218.5zM336.3 550.8L528.1 440L528.1 218.5L336.3 329.3L336.3 550.8z" fill="currentColor"/>
+              </svg>
+            </button>
+            <button id="grid-view-btn" class="segmented-control-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+                <path d="M128 128L128 256L256 256L256 128L128 128zM96 96L288 96L288 288L96 288L96 96zM128 384L128 512L256 512L256 384L128 384zM96 352L288 352L288 544L96 544L96 352zM512 128L384 128L384 256L512 256L512 128zM384 96L544 96L544 288L352 288L352 96L384 96zM384 384L384 512L512 512L512 384L384 384zM352 352L544 352L544 544L352 544L352 352z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div id="grid-container" class="hidden" style="display: none;"></div>
+    <div class="header-wrapper ui-wrapper">
+      <div id="header">
+        <a href="https://www.amplemarket.com/" target="_blank" rel="noopener noreferrer" class="header-pill">
+          <svg width="24" height="20" viewBox="-1 -1 26 22" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <path d="M14.0742 12.0398V15.1226C14.0742 17.3645 15.8915 19.1819 18.1335 19.1819H23.1162C23.5608 19.1819 23.9205 18.8222 23.9205 18.3776V9.78259C23.9205 9.33798 23.5608 8.97828 23.1162 8.97828H18.2231C17.4825 8.97828 16.8834 8.378 16.8834 7.63856V0.804307C16.8822 0.360877 16.5225 0 16.0779 0H10.7343C10.4902 0 10.259 0.110858 10.1057 0.30191L0.175721 12.7297C0.0613254 12.8724 0 13.0493 0 13.2321V18.3776C0 18.8222 0.359697 19.1819 0.804307 19.1819H6.14788C6.392 19.1819 6.62315 19.071 6.77646 18.88L12.6425 11.5386C13.1166 10.9442 14.0742 11.2803 14.0742 12.041V12.0398Z" stroke="#021F51" stroke-width="1.25" fill="none"/>
+          </svg>
+          <span class="header-pill-text-mobile header-pill-text-full">Amplemarket in Tenerife, Spain 2026</span>
+          <span class="header-pill-text-mobile header-pill-text-short">Amplemarket in Tenerife, 2026</span>
+        </a>
+        <div class="header-pill header-pill-tenerife is-no-hover">
+          <span>Amplemarket in Tenerife, Spain 2026</span>
+        </div>
+      </div>
+    </div>
+    <div class="coordinates-wrapper ui-wrapper">
+      <div id="coordinates">
+        <svg id="globe" width="36" height="36" viewBox="0 0 43 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="globe-clip">
+              <circle cx="21.5" cy="21.5" r="20" />
+            </clipPath>
+          </defs>
+          <circle cx="21.5" cy="21.5" r="21" stroke="#021F51"/>
+          <g clip-path="url(#globe-clip)">
+            <path id="meridian" d="M21.5 0.5Q27 10.5 27 21.5Q27 32.5 21.5 42.5" stroke="#021F51" stroke-linecap="round" stroke-dasharray="1 3" fill="none"/>
+            <path id="equator" d="M0 21.5Q10.5 27 21.5 27Q32.5 27 43 21.5" stroke="#021F51" stroke-linecap="round" fill="none"/>
+          </g>
+          <path d="M23.5 20.5L20.5 23.5" stroke="#021F51" stroke-width="0.8" stroke-linecap="round"/>
+          <path d="M20.5 20.5L23.5 23.5" stroke="#021F51" stroke-width="0.8" stroke-linecap="round"/>
+        </svg>
+        <span id="coord-text"></span>
+      </div>
+    </div>
+    <div class="instructions-wrapper">
+      <div id="instructions">
+        <div class="instructions-container">
+        <div class="instruction-item">
+          <div class="icon-box">
+            <svg width="14" height="14" viewBox="0 0 526 526" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_7240_33668)">
+                <path d="M274.4 11.7L263.1 0.399994L251.8 11.7L179.8 83.7L168.5 95L191.1 117.6C193.1 115.6 211.8 96.9 247.1 61.6V247H61.7C97.1 211.6 115.7 193 117.7 191L95.1 168.4L83.8 179.7L11.8 251.7L0.5 263L11.8 274.3L83.8 346.3L95.1 357.6L117.7 335C115.7 333 97 314.3 61.7 279H247.1V464.4C211.7 429 193.1 410.4 191.1 408.4L168.5 431L179.8 442.3L251.8 514.3L263.1 525.6L274.4 514.3L346.4 442.3L357.7 431L335.1 408.4C333.1 410.4 314.4 429 279.1 464.4V279H464.5C429.1 314.4 410.5 333 408.5 335L431.1 357.6L442.4 346.3L514.4 274.3L525.7 263L514.4 251.7L442.4 179.7L431.1 168.4L408.5 191C410.5 193 429.1 211.7 464.5 247H279.1V61.6C314.5 97 333.1 115.6 335.1 117.6L357.7 95L346.4 83.7L274.4 11.7Z" fill="currentColor"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_7240_33668">
+                  <rect width="526" height="526" fill="white"/>
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <span>Scroll</span>
+        </div>
+        <div class="instruction-item">
+          <div class="icon-box">
+            <svg width="14" height="14" viewBox="0 0 526 526" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_7240_33669)">
+                <path d="M274.4 11.7L263.1 0.399994L251.8 11.7L179.8 83.7L168.5 95L191.1 117.6C193.1 115.6 211.8 96.9 247.1 61.6V247H61.7C97.1 211.6 115.7 193 117.7 191L95.1 168.4L83.8 179.7L11.8 251.7L0.5 263L11.8 274.3L83.8 346.3L95.1 357.6L117.7 335C115.7 333 97 314.3 61.7 279H247.1V464.4C211.7 429 193.1 410.4 191.1 408.4L168.5 431L179.8 442.3L251.8 514.3L263.1 525.6L274.4 514.3L346.4 442.3L357.7 431L335.1 408.4C333.1 410.4 314.4 429 279.1 464.4V279H464.5C429.1 314.4 410.5 333 408.5 335L431.1 357.6L442.4 346.3L514.4 274.3L525.7 263L514.4 251.7L442.4 179.7L431.1 168.4L408.5 191C410.5 193 429.1 211.7 464.5 247H279.1V61.6C314.5 97 333.1 115.6 335.1 117.6L357.7 95L346.4 83.7L274.4 11.7Z" fill="currentColor"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_7240_33669">
+                  <rect width="526" height="526" fill="white"/>
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <span>Drag</span>
+        </div>
+        <div class="instruction-item instruction-item-keyboard">
+          <span>Keys</span>
+          <div style="display: flex; gap: 0.25rem; align-items: center;">
+            <div class="icon-box">
+              <svg width="14" height="14" viewBox="0 0 526 526" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(90deg);">
+                <path d="M251.698 514.3L262.998 525.6L274.298 514.3L450.298 338.3L461.598 327L438.998 304.4L427.698 315.7L278.998 464.4V7H246.998V464.4L98.2984 315.7L86.9984 304.4L64.3984 327L75.6984 338.3L251.698 514.3Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="icon-box">
+              <svg width="14" height="14" viewBox="0 0 526 526" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(-90deg);">
+                <path d="M251.698 514.3L262.998 525.6L274.298 514.3L450.298 338.3L461.598 327L438.998 304.4L427.698 315.7L278.998 464.4V7H246.998V464.4L98.2984 315.7L86.9984 304.4L64.3984 327L75.6984 338.3L251.698 514.3Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="icon-box">
+              <svg width="14" height="14" viewBox="0 0 526 526" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(180deg);">
+                <path d="M251.698 514.3L262.998 525.6L274.298 514.3L450.298 338.3L461.598 327L438.998 304.4L427.698 315.7L278.998 464.4V7H246.998V464.4L98.2984 315.7L86.9984 304.4L64.3984 327L75.6984 338.3L251.698 514.3Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="icon-box">
+              <svg width="14" height="14" viewBox="0 0 526 526" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M251.698 514.3L262.998 525.6L274.298 514.3L450.298 338.3L461.598 327L438.998 304.4L427.698 315.7L278.998 464.4V7H246.998V464.4L98.2984 315.7L86.9984 304.4L64.3984 327L75.6984 338.3L251.698 514.3Z" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Careers Modal -->
+    <div id="careers-modal" class="careers-modal hidden">
+      <div class="careers-modal-overlay"></div>
+      <div class="careers-modal-content">
+        <div class="careers-modal-logo">
+          <svg width="24" height="20" viewBox="-1 -1 26 22" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <path d="M14.0742 12.0398V15.1226C14.0742 17.3645 15.8915 19.1819 18.1335 19.1819H23.1162C23.5608 19.1819 23.9205 18.8222 23.9205 18.3776V9.78259C23.9205 9.33798 23.5608 8.97828 23.1162 8.97828H18.2231C17.4825 8.97828 16.8834 8.378 16.8834 7.63856V0.804307C16.8822 0.360877 16.5225 0 16.0779 0H10.7343C10.4902 0 10.259 0.110858 10.1057 0.30191L0.175721 12.7297C0.0613254 12.8724 0 13.0493 0 13.2321V18.3776C0 18.8222 0.359697 19.1819 0.804307 19.1819H6.14788C6.392 19.1819 6.62315 19.071 6.77646 18.88L12.6425 11.5386C13.1166 10.9442 14.0742 11.2803 14.0742 12.041V12.0398Z" stroke="#021F51" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+        <div class="careers-modal-text">
+          <p class="careers-modal-text-line">We're hiring!</p>
+          <p class="careers-modal-text-line">Join the team and help us create the kind of memories people talk about for years.</p>
+        </div>
+        <a href="https://www.amplemarket.com/careers" target="_blank" rel="noopener noreferrer" class="careers-modal-button">See current openings</a>
+        <button class="careers-modal-close" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="14" height="14">
+            <path d="M135.5 169L118.5 152L152.4 118.1L169.4 135.1L320.4 286.1L471.4 135.1L488.4 118.1L522.3 152L505.3 169L354.3 320L505.3 471L522.3 488L488.4 521.9L471.4 504.9L320.4 353.9L169.4 504.9L152.4 521.9L118.5 488L135.5 471L286.5 320L135.5 169z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Careers Dynamic Island -->
+    <div class="careers-island-wrapper">
+      <div id="careers-island" class="careers-island" data-mounted="false">
+        <div class="careers-island-content">
+          <a href="https://www.amplemarket.com/careers" target="_blank" rel="noopener noreferrer" class="careers-island-button">Visit careers</a>
+          <div class="careers-island-text">
+            We're hiring!
+          </div>
+          <button class="careers-island-close" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="14" height="14">
+              <path d="M135.5 169L118.5 152L152.4 118.1L169.4 135.1L320.4 286.1L471.4 135.1L488.4 118.1L522.3 152L505.3 169L354.3 320L505.3 471L522.3 488L488.4 521.9L471.4 504.9L320.4 353.9L169.4 504.9L152.4 521.9L118.5 488L135.5 471L286.5 320L135.5 169z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script>
+      // Loading animation
+      document.body.classList.add('loading');
+      
+      // Helper functions for path generation (simplified versions)
+      function getMeridianPath(longitude) {
+        const GLOBE_CX = 21.5;
+        const GLOBE_CY = 21.5;
+        const GLOBE_R = 21;
+        // Normalize longitude to -180 to 180 range using proper modulo
+        let normalizedLon = longitude % 360;
+        if (normalizedLon > 180) normalizedLon -= 360;
+        if (normalizedLon < -180) normalizedLon += 360;
+        const lonNorm = -normalizedLon / 180;
+        const clampedNorm = Math.max(-1, Math.min(1, lonNorm));
+        const x = GLOBE_CX + lonNorm * GLOBE_R;
+        const dy = Math.sqrt(Math.max(0, GLOBE_R * GLOBE_R - (clampedNorm * GLOBE_R) ** 2));
+        const yTop = GLOBE_CY - dy;
+        const yBottom = GLOBE_CY + dy;
+        const bulgeFactor = Math.abs(clampedNorm);
+        const bulgeDir = lonNorm >= 0 ? 1 : -1;
+        const bulgeAmount = bulgeFactor * GLOBE_R * 0.55;
+        const cx = x + bulgeDir * bulgeAmount;
+        return `M${x.toFixed(1)} ${yTop.toFixed(1)}Q${cx.toFixed(1)} ${GLOBE_CY} ${x.toFixed(1)} ${yBottom.toFixed(1)}`;
+      }
+
+      function getEquatorPath(latitude) {
+        const GLOBE_CX = 21.5;
+        const GLOBE_CY = 21.5;
+        const GLOBE_R = 21;
+        // Normalize latitude to -90 to 90 range (wraps every 180 degrees)
+        // For continuous animation through 360 degrees: 0->90->0->90->0
+        let normalizedLat = latitude % 180;
+        if (normalizedLat > 90) normalizedLat = 180 - normalizedLat;
+        if (normalizedLat < -90) normalizedLat = -180 - normalizedLat;
+        const latNorm = -normalizedLat / 90;
+        const clampedNorm = Math.max(-1, Math.min(1, latNorm));
+        const y = GLOBE_CY - latNorm * GLOBE_R;
+        const dx = Math.sqrt(Math.max(0, GLOBE_R * GLOBE_R - (clampedNorm * GLOBE_R) ** 2));
+        const xLeft = GLOBE_CX - dx;
+        const xRight = GLOBE_CX + dx;
+        const bulgeFactor = Math.abs(clampedNorm);
+        const bulgeDir = latNorm >= 0 ? -1 : 1;
+        const bulgeAmount = bulgeFactor * GLOBE_R * 0.55;
+        const cy = y + bulgeDir * bulgeAmount;
+        return `M${xLeft.toFixed(1)} ${y.toFixed(1)}Q${GLOBE_CX} ${cy.toFixed(1)} ${xRight.toFixed(1)} ${y.toFixed(1)}`;
+      }
+
+      // Split loading text into letters for shimmer effect
+      const loadingText = document.getElementById('loading-text');
+      if (loadingText) {
+        const text = loadingText.textContent.trim();
+        loadingText.textContent = '';
+        const letters = text.split('');
+        const fragment = document.createDocumentFragment();
+        const totalLetters = letters.length;
+        const waveDuration = 2; // Match animation duration
+        // Distribute delays to create a continuous wave effect
+        // Use negative delays to start some letters mid-animation for immediate gradient
+        const delayStep = waveDuration / totalLetters;
+        letters.forEach((letter, index) => {
+          const span = document.createElement('span');
+          span.textContent = letter === ' ' ? '\u00A0' : letter; // Use non-breaking space for spaces
+          // Create delays that wrap around - this ensures a continuous wave from the start
+          const delay = index * delayStep;
+          span.style.animationDelay = `${delay}s`;
+          fragment.appendChild(span);
+        });
+        loadingText.appendChild(fragment);
+      }
+      
+      // Animate the globe paths
+      const loadingMeridian = document.getElementById('loading-meridian');
+      const loadingEquator = document.getElementById('loading-equator');
+      
+      let animationStartTime = null;
+      let animationIteration = 0;
+      const animationDuration = 2000; // 2 seconds per iteration
+      const animationStartDelay = 600; // Start at 0.6s
+      const totalIterations = 2; // Run animation twice
+      
+      // Cubic bezier easing function (0.76, 0, 0.24, 1)
+      function cubicBezier(x1, y1, x2, y2) {
+        return function(t) {
+          // Binary search for the correct t value
+          let start = 0;
+          let end = 1;
+          for (let i = 0; i < 14; i++) {
+            const mid = (start + end) / 2;
+            const x = 3 * (1 - mid) * (1 - mid) * mid * x1 + 3 * (1 - mid) * mid * mid * x2 + mid * mid * mid;
+            if (x < t) start = mid;
+            else end = mid;
+          }
+          const t2 = (start + end) / 2;
+          return 3 * (1 - t2) * (1 - t2) * t2 * y1 + 3 * (1 - t2) * t2 * t2 * y2 + t2 * t2 * t2;
+        };
+      }
+      
+      const easeCustom = cubicBezier(0.76, 0, 0.24, 1);
+      
+      function animateGlobePaths(timestamp) {
+        if (!animationStartTime) {
+          animationStartTime = timestamp + animationStartDelay;
+          requestAnimationFrame(animateGlobePaths);
+          return;
+        }
+        
+        const elapsed = timestamp - animationStartTime;
+        const iterationElapsed = elapsed - (animationIteration * animationDuration);
+        
+        if (elapsed < 0) {
+          requestAnimationFrame(animateGlobePaths);
+          return;
+        }
+        
+        // Check if we need to move to next iteration
+        if (iterationElapsed >= animationDuration && animationIteration < totalIterations - 1) {
+          animationIteration++;
+          // Continue from end position (center/0) - no reset needed
+          requestAnimationFrame(animateGlobePaths);
+          return;
+        }
+        
+        // Check if current iteration is still running
+        if (iterationElapsed < animationDuration && animationIteration < totalIterations) {
+          const rawProgress = iterationElapsed / animationDuration;
+          const easedProgress = easeCustom(rawProgress);
+          
+          // Calculate position based on iteration
+          // First iteration: -180 to 360 (wraps to 0) = 1.5 rotations ending at center
+          // Second iteration: 0 to 360 = 1 rotation from center, ending at center
+          const baseLongitude = animationIteration === 0 ? -180 : 0;
+          const baseLatitude = animationIteration === 0 ? -90 : 0;
+          const rotationLongitude = animationIteration === 0 ? 540 : 360; // 1.5 rotations first, 1 rotation second
+          const rotationLatitude = animationIteration === 0 ? 270 : 180; // 1.5 rotations first, 1 rotation second
+          const longitude = baseLongitude + (easedProgress * rotationLongitude);
+          const latitude = baseLatitude + (easedProgress * rotationLatitude);
+          
+          if (loadingMeridian) {
+            loadingMeridian.setAttribute('d', getMeridianPath(longitude));
+          }
+          if (loadingEquator) {
+            loadingEquator.setAttribute('d', getEquatorPath(latitude));
+          }
+          
+          requestAnimationFrame(animateGlobePaths);
+        } else {
+          // All animations complete - ensure we're at center (0, 0)
+          if (loadingMeridian) {
+            loadingMeridian.setAttribute('d', getMeridianPath(0));
+          }
+          if (loadingEquator) {
+            loadingEquator.setAttribute('d', getEquatorPath(0));
+          }
+        }
+      }
+      
+      requestAnimationFrame(animateGlobePaths);
+      
+      // Show text after globe fades in (globe starts at 0.6s, animation takes 0.5s, so finishes at 1.1s, then + 0.2s offset = 1.3s)
+      setTimeout(() => {
+        const loadingTextEl = document.getElementById('loading-text');
+        if (loadingTextEl) {
+          // Fade in the text container
+          loadingTextEl.style.opacity = '1';
+          loadingTextEl.style.transition = 'opacity 0.5s ease';
+          // Letters will start animating automatically with their staggered delays
+          loadingTextEl.classList.add('visible');
+        }
+      }, 1300);
+      
+      // Wait for both animations to complete (0.6s delay + 2s * 2 iterations = 4.6s)
+      // Then fade out loading screen and fade in content
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.classList.add('hidden');
+        document.body.classList.remove('loading');
+        
+        // Fade in UI elements after canvas appears (0.3s delay)
+        setTimeout(() => {
+          document.body.classList.add('ui-visible');
+        }, 300);
+        
+        // Show careers island after 4 seconds
+        setTimeout(() => {
+          const island = document.getElementById('careers-island');
+          if (island && island.getAttribute('data-mounted') === 'false') {
+            requestAnimationFrame(() => {
+              island.setAttribute('data-mounted', 'true');
+            });
+          }
+        }, 4000);
+        
+        // Remove loading screen from DOM after fade out
+        setTimeout(() => {
+          loadingScreen.remove();
+          document.dispatchEvent(new CustomEvent('loadingscreenremoved'));
+        }, 600);
+      }, 4600);
+    </script>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+      import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+      import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+      import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+      // ------------ VIEW TOGGLE ------------
+      const TABLET_BREAKPOINT = 992; // px; below this we only show grid, hide 3D UI
+      let currentView = 'threejs'; // 'threejs' or 'grid'
+      const gridContainer = document.getElementById('grid-container');
+      const threejsBtn = document.getElementById('threejs-view-btn');
+      const gridBtn = document.getElementById('grid-view-btn');
+      let lenisInstance = null;
+
+      function isTabletOrSmaller() {
+        return window.innerWidth <= TABLET_BREAKPOINT;
+      }
+
+      function applyViewportView() {
+        if (isTabletOrSmaller() && currentView !== 'grid') {
+          gridBtn.click();
+        }
+      }
+
+      threejsBtn.addEventListener('click', () => {
+        currentView = 'threejs';
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        const coordinates = document.getElementById('coordinates');
+        const instructionItems = document.querySelectorAll('.instruction-item');
+        
+        // First, fade out grid
+        gridContainer.classList.remove('visible');
+        
+        // After grid fades out, fade in canvas and UI elements
+        setTimeout(() => {
+          gridContainer.style.display = 'none';
+          gridContainer.classList.add('hidden');
+
+          // Show canvas wrapper with fade in
+          canvasWrapper.style.display = 'block';
+          canvasWrapper.classList.add('hidden');
+          canvasWrapper.offsetHeight;
+          canvasWrapper.classList.remove('hidden');
+
+          // Show coordinates and instructions with fade in
+          coordinates.style.display = 'flex';
+          document.getElementById('instructions').style.display = 'flex';
+
+          coordinates.classList.add('view-transition');
+          instructionItems.forEach(item => item.classList.add('view-transition'));
+          coordinates.classList.add('view-hidden');
+          instructionItems.forEach(item => item.classList.add('view-hidden'));
+
+          coordinates.offsetHeight;
+
+          coordinates.classList.remove('view-hidden');
+          instructionItems.forEach(item => item.classList.remove('view-hidden'));
+
+          // Defer texture refresh until after the browser paints the first transition frame
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              refreshThreeJSTextures();
+            });
+          });
+
+          setTimeout(() => {
+            coordinates.classList.remove('view-transition');
+            instructionItems.forEach(item => item.classList.remove('view-transition'));
+          }, 250);
+        }, 250);
+        
+        threejsBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+        
+        // Destroy Lenis when switching to Three.js view
+        if (lenisInstance) {
+          lenisInstance.destroy();
+          lenisInstance = null;
+        }
+      });
+
+      gridBtn.addEventListener('click', async () => {
+        currentView = 'grid';
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        const coordinates = document.getElementById('coordinates');
+        const instructionItems = document.querySelectorAll('.instruction-item');
+        
+        // Update toggle immediately
+        gridBtn.classList.add('active');
+        threejsBtn.classList.remove('active');
+
+        // Add transition classes
+        coordinates.classList.add('view-transition');
+        instructionItems.forEach(item => item.classList.add('view-transition'));
+
+        // First, fade out canvas and UI elements
+        canvasWrapper.classList.add('hidden');
+        coordinates.classList.add('view-hidden');
+        instructionItems.forEach(item => item.classList.add('view-hidden'));
+
+        // After fade out completes, hide canvas/UI and fade in grid
+        await new Promise(resolve => setTimeout(resolve, 250));
+
+        canvasWrapper.style.display = 'none';
+        coordinates.style.display = 'none';
+        document.getElementById('instructions').style.display = 'none';
+
+        // Remove transition classes
+        coordinates.classList.remove('view-transition');
+        instructionItems.forEach(item => item.classList.remove('view-transition'));
+
+        // Now show and fade in grid
+        gridContainer.innerHTML = '';
+        gridContainer.classList.remove('hidden');
+        gridContainer.style.display = 'block';
+        gridContainer.offsetHeight;
+        gridContainer.classList.add('visible');
+
+        // Wait for grid to populate and images to load
+        await populateGridView();
+        
+        // Initialize or recreate Lenis for grid view after grid is populated
+        if (lenisInstance) {
+          lenisInstance.destroy();
+          lenisInstance = null;
+        }
+        
+        if (typeof Lenis !== 'undefined') {
+          const gridView = gridContainer.querySelector('.grid-view');
+          if (gridView) {
+            // Wait for layout to settle
+            await new Promise(resolve => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  resolve();
+                });
+              });
+            });
+            
+            lenisInstance = new Lenis({
+              wrapper: gridContainer,
+              content: gridView,
+              duration: 1.2,
+              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+              smoothWheel: true,
+              wheelMultiplier: 1,
+            });
+            
+            // Force a resize to recalculate height
+            requestAnimationFrame(() => {
+              if (lenisInstance) {
+                lenisInstance.resize();
+              }
+            });
+            
+            function raf(time) {
+              if (lenisInstance) {
+                lenisInstance.raf(time);
+                requestAnimationFrame(raf);
+              }
+            }
+            requestAnimationFrame(raf);
+            
+            // Resize multiple times to ensure proper calculation as images load
+            setTimeout(() => {
+              if (lenisInstance) lenisInstance.resize();
+            }, 300);
+            setTimeout(() => {
+              if (lenisInstance) lenisInstance.resize();
+            }, 800);
+            setTimeout(() => {
+              if (lenisInstance) lenisInstance.resize();
+            }, 1500);
+            // After loading screen is gone (5.2s), resize so grid scroll works on first load
+            setTimeout(() => {
+              if (lenisInstance) lenisInstance.resize();
+            }, 5500);
+          }
+        }
+      });
+
+      // ------------ CONFIG ------------
+      // Sub-grid tile system: every card snaps to a sub-grid so gaps are uniform,
+      // portrait / landscape bands naturally misalign, and the tile wraps perfectly.
+      const GAP = 0.2;           // Uniform visual gap between ALL cards (horizontal & vertical)
+      const TEXT_LABEL_GAP = 0.03; // Space between card bottom edge and label top (smaller than GAP)
+      const LABEL_BUDGET = 0.2;   // Vertical space budgeted for the label above each card
+
+      const SUB_W = 0.75;        // Sub-grid unit width  (horizontal spacing unchanged)
+      const SUB_H = (1.8 + GAP + LABEL_BUDGET) / 2; // 1.1 – ensures landscape card = 1.8 tall
+      const TILE_SUB_COLS = 24;  // Sub-columns per tile (LCM(3,4)*2 for comfort)
+
+      // Card dimensions – derived from the sub-grid
+      // Each card's allocated vertical space = bandH × SUB_H.
+      // That space holds: cardH + LABEL_BUDGET (label above) + GAP (to next card).
+      const CARD_W     = 4 * SUB_W - GAP;                  // 2.8  (landscape: 4 sub-cols)
+      const CARD_H     = 2 * SUB_H - GAP - LABEL_BUDGET;  // 1.8  (landscape: 2 sub-rows)
+      const PORTRAIT_W = 3 * SUB_W - GAP;                  // 2.05 (portrait:  3 sub-cols)
+      const PORTRAIT_H = 3 * SUB_H - GAP - LABEL_BUDGET;  // 2.9  (portrait:  3 sub-rows)
+      const SCROLL_SPEED = 0.004;
+      let ARROW_KEY_SPEED = 0.05; // Speed for arrow key movement (will be modified for easter egg)
+      const BASE_ARROW_KEY_SPEED = 0.05; // Base speed for arrow key movement
+      const LERP = 0.1;
+      
+      // Easter egg tracking
+      let easterEggStartTime = null;
+      let easterEggActive = false;
+      let easterEggToastShown = false;
+      let easterEggTriggerKeys = new Set(); // Track which keys triggered the easter egg
+      let easterEggLastToastTime = null; // Track when toast was last shown
+      const EASTER_EGG_INCREASE_DURATION = 5000; // 3 seconds to reach max speed
+      const EASTER_EGG_DECREASE_DURATION = 3000; // 2 seconds to return to base speed
+      const EASTER_EGG_TOAST_DELAY = 500; // Delay after decrease starts before showing toast
+      const EASTER_EGG_COOLDOWN = 10000; // 10 seconds cooldown after toast appears
+      const MAX_SPEED_MULTIPLIER = 5.0; // Max speed increase (3x base speed)
+      // TEXT_LABEL_GAP is now defined in the sub-grid CONFIG above
+
+      const TILE_W = TILE_SUB_COLS * SUB_W; // 18.0
+      let TILE_H;  // Computed from bands in init()
+
+      // ------------ THREE.JS SETUP ------------
+      const canvas = document.getElementById('canvas');
+      const renderer = new THREE.WebGLRenderer({ 
+        canvas, 
+        antialias: true,
+        alpha: false 
+      });
+      canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); });
+      canvas.addEventListener('webglcontextrestored', () => {
+        if (typeof refreshThreeJSTextures === 'function') refreshThreeJSTextures();
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf6f5f3);
+      
+      const camera = new THREE.PerspectiveCamera(
+        50,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.z = 9;
+
+      // ------------ COMBINED DISTORTION + EDGE BLUR SHADER ------------
+      const DistortionShader = {
+        uniforms: {
+          tDiffuse: { value: null },
+          strength: { value: 0 },
+          blurAmount: { value: 0 },
+          resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+          uTrembleX: { value: 0 },
+          uTrembleY: { value: 0 },
+          uTime: { value: 0 },
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision highp float;
+          uniform sampler2D tDiffuse;
+          uniform float strength;
+          uniform float blurAmount;
+          uniform vec2 resolution;
+          uniform float uTrembleX;
+          uniform float uTrembleY;
+          uniform float uTime;
+          varying vec2 vUv;
+          
+          // Edge fade zones (0 = edge, 1 = center)
+          float getEdgeFade(vec2 uv) {
+            float edgeSize = 0.15; // Size of blur zone from edge
+            
+            // Distance from each edge (0 at edge, 1 at edgeSize distance)
+            float left = smoothstep(0.0, edgeSize, uv.x);
+            float right = smoothstep(0.0, edgeSize, 1.0 - uv.x);
+            float top = smoothstep(0.0, edgeSize, 1.0 - uv.y);
+            float bottom = smoothstep(0.0, edgeSize, uv.y);
+            
+            // Combine all edges
+            return left * right * top * bottom;
+          }
+          
+          // Simple box blur
+          vec4 blur(sampler2D tex, vec2 uv, vec2 texelSize, float radius) {
+            vec4 color = vec4(0.0);
+            float total = 0.0;
+            
+            for (float x = -4.0; x <= 4.0; x += 1.0) {
+              for (float y = -4.0; y <= 4.0; y += 1.0) {
+                vec2 offset = vec2(x, y) * texelSize * radius;
+                color += texture2D(tex, uv + offset);
+                total += 1.0;
+              }
+            }
+            
+            return color / total;
+          }
+          
+          void main() {
+            // Apply barrel distortion first
+            vec2 centered = vUv - 0.5;
+            float r2 = dot(centered, centered);
+            float barrel = 1.0 + strength * r2;
+            vec2 distorted = centered * barrel;
+            float zoom = 1.0 / (1.0 + strength * 0.5);
+            vec2 finalUV = distorted * zoom + 0.5;
+            
+            // Dizzy toast: direction-aware tremble (X = up/down/diagonal, Y = left/right only)
+            float trembleWave = 0.04 * sin(uTime * 10.0);
+            finalUV.x += uTrembleX * trembleWave;
+            finalUV.y += uTrembleY * trembleWave;
+            
+            // Calculate edge fade (1 in center, 0 at edges)
+            float edgeFade = getEdgeFade(finalUV);
+            
+            // Get texel size for blur sampling
+            vec2 texelSize = 1.0 / resolution;
+            
+            // Sample with blur based on edge proximity and blurAmount
+            float blurRadius = (1.0 - edgeFade) * blurAmount * 5.0;
+            
+            vec4 color;
+            if (blurRadius > 0.1) {
+              color = blur(tDiffuse, finalUV, texelSize, blurRadius);
+            } else {
+              color = texture2D(tDiffuse, finalUV);
+            }
+            
+            gl_FragColor = color;
+          }
+        `
+      };
+
+      // ------------ POST PROCESSING ------------
+      const composer = new EffectComposer(renderer);
+      composer.setPixelRatio(renderer.getPixelRatio());
+      composer.setSize(window.innerWidth, window.innerHeight);
+      composer.addPass(new RenderPass(scene, camera));
+      const distortionPass = new ShaderPass(DistortionShader);
+      composer.addPass(distortionPass);
+      composer.addPass(new OutputPass());
+
+      // ------------ LOAD IMAGES ------------
+      const textureLoader = new THREE.TextureLoader();
+      let imageUrls = [];
+      const loadedTextures = new Map();
+
+      async function loadManifest() {
+        try {
+          // Always load from site root so paths work from / or /index.html
+          const base = window.location.origin + '/';
+          const response = await fetch(base + 'images/manifest.json');
+          if (response.ok) {
+            const manifest = await response.json();
+            imageUrls = manifest.map(img => base + 'images/' + img.fileName);
+            console.log(`Loaded ${imageUrls.length} images`);
+          }
+        } catch (e) {
+          console.warn('No manifest found', e);
+        }
+      }
+
+      // Calculate average color from image
+      async function getAverageColor(imageUrl) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = 50;
+              canvas.height = 50;
+              
+              ctx.drawImage(img, 0, 0, 50, 50);
+              const imageData = ctx.getImageData(0, 0, 50, 50);
+              const data = imageData.data;
+              
+              let r = 0, g = 0, b = 0;
+              const pixelCount = data.length / 4;
+              
+              for (let i = 0; i < data.length; i += 4) {
+                r += data[i];
+                g += data[i + 1];
+                b += data[i + 2];
+              }
+              
+              r = Math.floor(r / pixelCount);
+              g = Math.floor(g / pixelCount);
+              b = Math.floor(b / pixelCount);
+              
+              resolve(`rgba(${r}, ${g}, ${b}, 0.3)`);
+            } catch (e) {
+              // Fallback if canvas access fails (CORS)
+              resolve('rgba(246, 245, 243, 0.3)');
+            }
+          };
+          
+          img.onerror = () => {
+            resolve('rgba(246, 245, 243, 0.3)'); // Fallback color
+          };
+          
+          img.src = imageUrl;
+        });
+      }
+
+      async function populateGridView() {
+        gridContainer.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'grid-view';
+        
+        if (imageUrls.length === 0) {
+          const emptyState = document.createElement('div');
+          emptyState.className = 'grid-empty-state';
+          emptyState.textContent = 'No images found. Add an images/ folder with manifest.json and image files, or run npm run process-local with images in downloads/.';
+          grid.appendChild(emptyState);
+          gridContainer.appendChild(grid);
+          return;
+        }
+        
+        // ---- Classify images by orientation ----
+        const portraits = [];
+        const landscapes = [];
+        for (let i = 0; i < imageUrls.length; i++) {
+          const cached = loadedTextures.get(i);
+          if (cached && cached.aspect < 1) portraits.push(i);
+          else landscapes.push(i);
+        }
+        
+        // ---- Determine column count by breakpoint ----
+        const containerWidth = gridContainer.clientWidth || window.innerWidth;
+        let colCount;
+        if (containerWidth >= 992) colCount = 5;
+        else if (containerWidth >= 768) colCount = 4;
+        else if (containerWidth >= 480) colCount = 3;
+        else colCount = 2;
+        
+        lastGridColCount = colCount;
+        const pBase = Math.floor(portraits.length / colCount);
+        const pRem = portraits.length % colCount;
+        const lBase = Math.floor(landscapes.length / colCount);
+        const lRem = landscapes.length % colCount;
+        
+        // ---- Build image list per column (distribute remainder into first columns) ----
+        function shuffleArray(arr) {
+          const a = [...arr];
+          for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+          }
+          return a;
+        }
+        
+        const columns = [];
+        let pStart = 0, lStart = 0;
+        for (let c = 0; c < colCount; c++) {
+          const colEl = document.createElement('div');
+          colEl.className = 'grid-column';
+          grid.appendChild(colEl);
+          
+          const pCount = pBase + (c < pRem ? 1 : 0);
+          const lCount = lBase + (c < lRem ? 1 : 0);
+          const colPortraits = portraits.slice(pStart, pStart + pCount);
+          const colLandscapes = landscapes.slice(lStart, lStart + lCount);
+          pStart += pCount;
+          lStart += lCount;
+          
+          const colImages = shuffleArray([
+            ...colPortraits.map(idx => ({ index: idx, isPortrait: true })),
+            ...colLandscapes.map(idx => ({ index: idx, isPortrait: false }))
+          ]);
+          
+          columns.push({ el: colEl, images: colImages });
+        }
+        
+        // ---- Create DOM items ----
+        const DEFAULT_PLACEHOLDER_COLOR = '#e5e4e1';
+        const imagePromises = [];
+        let itemNumber = 0;
+        
+        // Number items top-to-bottom across columns (row by row)
+        // Build a matrix: columns × rows, then number row-first
+        const maxRows = Math.max(...columns.map(c => c.images.length));
+        const numberMatrix = columns.map(c => c.images.map(() => 0));
+        let num = 1;
+        for (let row = 0; row < maxRows; row++) {
+          for (let col = 0; col < columns.length; col++) {
+            if (row < columns[col].images.length) {
+              numberMatrix[col][row] = num++;
+            }
+          }
+        }
+        
+        for (let col = 0; col < columns.length; col++) {
+          const { el: colEl, images: colImages } = columns[col];
+          
+          for (let row = 0; row < colImages.length; row++) {
+            const { index, isPortrait } = colImages[row];
+            const url = imageUrls[index];
+            const item = document.createElement('div');
+            item.className = 'grid-item';
+            
+            const label = document.createElement('div');
+            label.className = 'grid-item-label';
+            label.textContent = String(numberMatrix[col][row]).padStart(4, '0');
+            
+            const imageWrapper = document.createElement('div');
+            imageWrapper.className = 'grid-item-image-wrapper ' + (isPortrait ? 'is-portrait' : 'is-landscape');
+            
+            const placeholder = document.createElement('div');
+            placeholder.className = 'grid-item-placeholder';
+            placeholder.style.backgroundColor = DEFAULT_PLACEHOLDER_COLOR;
+            placeholder.classList.add('visible');
+            
+            const cached = loadedTextures.get(index);
+            const img = (cached?.texture?.image && cached.texture.image instanceof HTMLImageElement)
+              ? cached.texture.image
+              : document.createElement('img');
+            img.alt = `Image ${numberMatrix[col][row]}`;
+            img.classList.remove('loaded');
+            
+            const showImage = () => {
+              img.classList.add('loaded');
+              placeholder.classList.add('hidden');
+            };
+            
+            const alreadyLoaded = img.complete || (cached?.texture?.image !== undefined);
+            if (alreadyLoaded) {
+              imagePromises.push(Promise.resolve());
+              showImage();
+            } else {
+              img.src = url;
+              img.loading = 'lazy';
+              img.decoding = 'async';
+              const imgPromise = new Promise((resolve) => {
+                img.onload = () => { showImage(); resolve(); };
+                img.onerror = () => resolve();
+              });
+              imagePromises.push(imgPromise);
+            }
+            
+            imageWrapper.appendChild(placeholder);
+            imageWrapper.appendChild(img);
+            item.appendChild(imageWrapper);
+            item.appendChild(label);
+            colEl.appendChild(item);
+            itemNumber++;
+          }
+        }
+        
+        gridContainer.appendChild(grid);
+        
+        // Update placeholders to average color (only if image not loaded yet)
+        const allItems = grid.querySelectorAll('.grid-item');
+        allItems.forEach(item => {
+          const ph = item.querySelector('.grid-item-placeholder');
+          const img = item.querySelector('img');
+          if (!ph || !img || !img.src) return;
+          getAverageColor(img.src).then(avgColor => {
+            if (ph && img && !img.classList.contains('loaded')) ph.style.backgroundColor = avgColor;
+          });
+        });
+        
+        await Promise.race([
+          Promise.all(imagePromises),
+          new Promise(resolve => setTimeout(resolve, 2000))
+        ]);
+        gridContainer.offsetHeight;
+      }
+
+      async function preloadTextures() {
+        const promises = imageUrls.map((url, index) => {
+          return new Promise((resolve) => {
+            textureLoader.load(
+              url,
+              (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                loadedTextures.set(index, { 
+                  texture, 
+                  aspect: texture.image.width / texture.image.height 
+                });
+                resolve();
+              },
+              undefined,
+              () => resolve()
+            );
+          });
+        });
+        await Promise.all(promises);
+      }
+
+      // ------------ CREATE TEXT TEXTURE ------------
+      const VISIBLE_HEIGHT = 2 * Math.tan((50 / 2) * Math.PI / 180) * 9;
+      const PIXELS_PER_UNIT = window.innerHeight / VISIBLE_HEIGHT;
+      
+      function createTextTexture(text) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const scale = 4;
+        const baseFontSize = 12;
+        const fontSize = baseFontSize * scale;
+        const padV = 4 * scale;
+        
+        ctx.font = `${fontSize}px "Geist Mono", monospace`;
+        const metrics = ctx.measureText(text);
+        
+        canvas.width  = Math.ceil(metrics.width + 2);
+        canvas.height = Math.ceil(fontSize * 1.3 + padV);  // pad top only
+        
+        ctx.fillStyle = '#f6f5f3';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = `${fontSize}px "Geist Mono", monospace`;
+        ctx.fillStyle = '#021F51';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(text, 0, canvas.height);  // flush to bottom edge
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        
+        const widthInUnits = (canvas.width / scale) / PIXELS_PER_UNIT;
+        const heightInUnits = (canvas.height / scale) / PIXELS_PER_UNIT;
+        
+        return { texture, width: widthInUnits, height: heightInUnits };
+      }
+
+      // ------------ CREATE GEOMETRY ------------
+      function createRectGeometry(width, height, imageAspect) {
+        const geometry = new THREE.PlaneGeometry(width, height);
+        const positions = geometry.attributes.position;
+        const uvs = new Float32Array(positions.count * 2);
+        
+        const cardAspect = width / height;
+        let scaleU = 1, scaleV = 1, offsetU = 0, offsetV = 0;
+        
+        if (imageAspect > cardAspect) {
+          scaleU = cardAspect / imageAspect;
+          offsetU = (1 - scaleU) / 2;
+        } else {
+          scaleV = imageAspect / cardAspect;
+          offsetV = (1 - scaleV) / 2;
+        }
+        
+        for (let i = 0; i < positions.count; i++) {
+          const baseU = (positions.getX(i) + width / 2) / width;
+          const baseV = (positions.getY(i) + height / 2) / height;
+          uvs[i * 2] = offsetU + baseU * scaleU;
+          uvs[i * 2 + 1] = offsetV + baseV * scaleV;
+        }
+        
+        geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        return geometry;
+      }
+
+      // ------------ CREATE CARDS ------------
+      const cards = [];
+      const labels = [];
+      const defaultLandscapeGeometry = createRectGeometry(CARD_W, CARD_H, CARD_W / CARD_H);
+      const defaultPortraitGeometry  = createRectGeometry(PORTRAIT_W, PORTRAIT_H, PORTRAIT_W / PORTRAIT_H);
+
+      // createCard now takes the absolute tile-space centre position instead of row/col.
+      function createCard(centerX, centerY, imgIndex, isPortrait) {
+        const textureData = loadedTextures.get(imgIndex);
+
+        const cardW = isPortrait ? PORTRAIT_W : CARD_W;
+        const cardH = isPortrait ? PORTRAIT_H : CARD_H;
+
+        const geometry = textureData
+          ? createRectGeometry(cardW, cardH, textureData.aspect)
+          : (isPortrait ? defaultPortraitGeometry : defaultLandscapeGeometry);
+
+        const material = new THREE.MeshBasicMaterial({
+          color: textureData ? 0xffffff : 0xcccccc,
+          side: THREE.FrontSide,
+        });
+
+        if (textureData) {
+          material.map = textureData.texture;
+        }
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.userData = { centerX, centerY, imgIndex, cardH, cardW };
+        scene.add(mesh);
+        cards.push(mesh);
+
+        // Sequential number based on card creation order (not image index)
+        const labelText = String(cards.length).padStart(4, '0');
+        const textData = createTextTexture(labelText);
+
+        const labelGeometry = new THREE.PlaneGeometry(
+          textData.width,
+          textData.height
+        );
+
+        const labelMaterial = new THREE.MeshBasicMaterial({
+          map: textData.texture,
+          transparent: false,
+          side: THREE.FrontSide,
+        });
+
+        const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+        labelMesh.userData = { cardIndex: imgIndex };
+        scene.add(labelMesh);
+        labels.push(labelMesh);
+
+        return mesh;
+      }
+
+      /** Re-create image textures from their image elements and reassign to cards. Use when switching back to 3D after canvas was hidden (fixes black images from GPU eviction or context issues). */
+      function refreshThreeJSTextures() {
+        if (!loadedTextures.size || !cards.length) return;
+        const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+        loadedTextures.forEach((data, index) => {
+          if (!data.texture || !data.texture.image) return;
+          const img = data.texture.image;
+          const aspect = data.aspect;
+          const oldTexture = data.texture;
+          const newTexture = new THREE.Texture(img);
+          newTexture.colorSpace = THREE.SRGBColorSpace;
+          newTexture.minFilter = THREE.LinearFilter;
+          newTexture.magFilter = THREE.LinearFilter;
+          newTexture.needsUpdate = true;
+          newTexture.anisotropy = maxAnisotropy;
+          oldTexture.dispose();
+          loadedTextures.set(index, { texture: newTexture, aspect });
+        });
+        cards.forEach((card) => {
+          const imgIndex = card.userData.imgIndex;
+          const data = loadedTextures.get(imgIndex);
+          if (card.material && data?.texture) card.material.map = data.texture;
+        });
+      }
+
+      async function init() {
+        await document.fonts.ready;
+        await loadManifest();
+        await preloadTextures();
+
+        // ---- Fisher-Yates shuffle ----
+        function shuffle(arr) {
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+        }
+
+        // ---- Classify images by orientation ----
+        const portraitPool = [];
+        const landscapePool = [];
+        for (let i = 0; i < imageUrls.length; i++) {
+          const td = loadedTextures.get(i);
+          if (td && td.aspect < 1) portraitPool.push(i);
+          else                      landscapePool.push(i);
+        }
+        shuffle(portraitPool);
+        shuffle(landscapePool);
+
+        // ---- Band-based tile generation ----
+        // Portrait band: TILE_SUB_COLS/3 portraits across, 3 sub-rows tall
+        // Landscape band: TILE_SUB_COLS/4 landscapes across, 2 sub-rows tall
+        const P_PER_BAND = TILE_SUB_COLS / 3;  // 8
+        const L_PER_BAND = TILE_SUB_COLS / 4;  // 6
+
+        // Strictly alternate: P L P L P L ... until all images are placed
+        const totalImages = portraitPool.length + landscapePool.length;
+        const bands = [];
+        let pSlots = 0, lSlots = 0;
+        let next = 'P'; // start with portrait
+        while (pSlots < portraitPool.length || lSlots < landscapePool.length) {
+          if (next === 'P' && portraitPool.length > 0) {
+            bands.push('P');
+            pSlots += P_PER_BAND;
+            next = 'L';
+          } else if (next === 'L' && landscapePool.length > 0) {
+            bands.push('L');
+            lSlots += L_PER_BAND;
+            next = 'P';
+          } else {
+            // Only one type available, keep adding it
+            if (portraitPool.length > 0 && pSlots < portraitPool.length) {
+              bands.push('P'); pSlots += P_PER_BAND;
+            } else if (landscapePool.length > 0 && lSlots < landscapePool.length) {
+              bands.push('L'); lSlots += L_PER_BAND;
+            } else break;
+          }
+        }
+
+        // ---- Place cards from bands ----
+        // Each slot type ONLY uses images from its own orientation pool (cycling if needed).
+        let subRow = 0;
+        let pIdx = 0, lIdx = 0;
+
+        for (const bandType of bands) {
+          if (bandType === 'P') {
+            if (portraitPool.length === 0) continue; // skip if no portraits at all
+            const bandH = 3; // portrait sub-rows
+            for (let i = 0; i < P_PER_BAND; i++) {
+              const sc = i * 3; // sub-column start
+              const imgIdx = portraitPool[pIdx % portraitPool.length];
+              pIdx++;
+              const cx = sc * SUB_W + PORTRAIT_W / 2;
+              const cy = subRow * SUB_H + LABEL_BUDGET + PORTRAIT_H / 2;
+              createCard(cx, cy, imgIdx, true);
+            }
+            subRow += bandH;
+          } else {
+            if (landscapePool.length === 0) continue; // skip if no landscapes at all
+            const bandH = 2; // landscape sub-rows
+            for (let i = 0; i < L_PER_BAND; i++) {
+              const sc = i * 4;
+              const imgIdx = landscapePool[lIdx % landscapePool.length];
+              lIdx++;
+              const cx = sc * SUB_W + CARD_W / 2;
+              const cy = subRow * SUB_H + LABEL_BUDGET + CARD_H / 2;
+              createCard(cx, cy, imgIdx, false);
+            }
+            subRow += bandH;
+          }
+        }
+
+        TILE_H = subRow * SUB_H;
+
+        // ---- Re-number labels top-to-bottom, left-to-right ----
+        // Cards were created bottom-to-top (ascending subRow). Sort by Y descending
+        // (top first), then X ascending (left first) and reassign label textures.
+        const indexed = cards.map((c, i) => ({ card: c, label: labels[i], idx: i }));
+        indexed.sort((a, b) => {
+          const dy = b.card.userData.centerY - a.card.userData.centerY; // top first
+          if (Math.abs(dy) > 0.01) return dy;
+          return a.card.userData.centerX - b.card.userData.centerX;     // left first
+        });
+        indexed.forEach((entry, num) => {
+          const labelText = String(num + 1).padStart(4, '0');
+          const textData = createTextTexture(labelText);
+          entry.label.material.map.dispose();
+          entry.label.material.map = textData.texture;
+          entry.label.material.needsUpdate = true;
+          entry.label.geometry.dispose();
+          entry.label.geometry = new THREE.PlaneGeometry(textData.width, textData.height);
+        });
+      }
+
+      // ------------ INTERACTION STATE ------------
+      let targetOffsetX = 0, targetOffsetY = 0;
+      let currentOffsetX = 0, currentOffsetY = 0;
+      let prevOffsetX = 0, prevOffsetY = 0;
+      let isDragging = false;
+      let isScrolling = false;
+      let isArrowKeyPressed = false;
+      let scrollTimeout = null;
+      let dragStartX = 0, dragStartY = 0;
+      let dragStartOffsetX = 0, dragStartOffsetY = 0;
+      
+      // Rotation tracking for careers modal
+      const arrowKeys = {
+        ArrowUp: false,
+        ArrowDown: false,
+        ArrowLeft: false,
+        ArrowRight: false
+      };
+      
+      // Check if invalid key combinations are pressed (should prevent easter egg)
+      function hasInvalidKeyCombination() {
+        const allFour = arrowKeys.ArrowUp && arrowKeys.ArrowDown && arrowKeys.ArrowLeft && arrowKeys.ArrowRight;
+        const leftRight = arrowKeys.ArrowLeft && arrowKeys.ArrowRight;
+        const upDown = arrowKeys.ArrowUp && arrowKeys.ArrowDown;
+        return allFour || leftRight || upDown;
+      }
+      let currentDistortion = 0;
+      let currentBlur = 0;
+      
+      const DRAG_DISTORTION = 0.35;
+      const MAX_SCROLL_DISTORTION = 0.5;
+      const VELOCITY_SCALE = 4.0;
+      const DISTORTION_LERP = 0.12;
+      const BLUR_LERP = 0.08;
+      const DRAG_BLUR = 0.4;           // Fixed blur amount during drag
+      const MAX_SCROLL_BLUR = 0.5;     // Max blur for scroll velocity
+      const BLUR_VELOCITY_SCALE = 3.0; // How much velocity affects blur
+      const PARALLAX_STRENGTH = 0.15;  // How much cards move based on position
+
+      // Scroll handler
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        targetOffsetX -= e.deltaX * SCROLL_SPEED;
+        targetOffsetY += e.deltaY * SCROLL_SPEED;
+        
+        isScrolling = true;
+        
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          isScrolling = false;
+        }, 150);
+      }, { passive: false });
+
+      // Drag handlers
+      canvas.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        canvas.classList.add('dragging');
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragStartOffsetX = targetOffsetX;
+        dragStartOffsetY = targetOffsetY;
+        canvas.setPointerCapture(e.pointerId);
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        targetOffsetX = dragStartOffsetX + (e.clientX - dragStartX) * 0.01;
+        targetOffsetY = dragStartOffsetY - (e.clientY - dragStartY) * 0.01;
+      });
+
+      canvas.addEventListener('pointerup', (e) => {
+        isDragging = false;
+        canvas.classList.remove('dragging');
+        canvas.releasePointerCapture(e.pointerId);
+      });
+
+      canvas.addEventListener('pointercancel', () => {
+        isDragging = false;
+        canvas.classList.remove('dragging');
+      });
+
+      // Arrow key handlers
+      window.addEventListener('keydown', (e) => {
+        const careersModal = document.getElementById('careers-modal');
+        if (careersModal && !careersModal.classList.contains('hidden')) {
+          return; // Block arrow keys when modal is open
+        }
+        if (e.key in arrowKeys) {
+          e.preventDefault();
+          arrowKeys[e.key] = true;
+          isArrowKeyPressed = true;
+          
+          // Cancel easter egg if invalid key combinations are detected
+          if (hasInvalidKeyCombination() && easterEggActive) {
+            easterEggActive = false;
+            easterEggStartTime = null;
+            easterEggToastShown = false;
+            easterEggTriggerKeys.clear();
+            ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED;
+          }
+          
+          // Easter egg: Start tracking if any arrow key is pressed
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            // Don't start easter egg if invalid key combinations are pressed
+            if (hasInvalidKeyCombination()) {
+              // Cancel easter egg if it's active
+              if (easterEggActive) {
+                easterEggActive = false;
+                easterEggStartTime = null;
+                easterEggToastShown = false;
+                easterEggTriggerKeys.clear();
+                ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED;
+              }
+              return;
+            }
+            
+            // Check if cooldown has passed since last toast
+            const cooldownPassed = !easterEggLastToastTime || 
+              (Date.now() - easterEggLastToastTime) >= EASTER_EGG_COOLDOWN;
+            
+            // Only start easter egg if:
+            // 1. Not already active, OR
+            // 2. Toast was shown, cooldown has passed, and this is a different key than what triggered it
+            const isNewKey = !easterEggTriggerKeys.has(e.key);
+            const canStart = (!easterEggActive || (easterEggToastShown && isNewKey && cooldownPassed)) && cooldownPassed;
+            
+            if (canStart) {
+              easterEggStartTime = Date.now();
+              easterEggActive = true;
+              easterEggToastShown = false;
+              easterEggTriggerKeys.clear();
+              easterEggTriggerKeys.add(e.key);
+              // Also add other arrow keys if they're currently pressed
+              if (arrowKeys.ArrowRight && e.key !== 'ArrowRight') {
+                easterEggTriggerKeys.add('ArrowRight');
+              }
+              if (arrowKeys.ArrowDown && e.key !== 'ArrowDown') {
+                easterEggTriggerKeys.add('ArrowDown');
+              }
+              if (arrowKeys.ArrowLeft && e.key !== 'ArrowLeft') {
+                easterEggTriggerKeys.add('ArrowLeft');
+              }
+              if (arrowKeys.ArrowUp && e.key !== 'ArrowUp') {
+                easterEggTriggerKeys.add('ArrowUp');
+              }
+            } else if (easterEggActive && easterEggToastShown && !isNewKey) {
+              // If toast is shown and user presses same key, ensure speed stays at base
+              // This is handled in animate(), but we can ensure triggerKeys includes this key
+              if (!easterEggTriggerKeys.has(e.key)) {
+                easterEggTriggerKeys.add(e.key);
+              }
+            }
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        const careersModal = document.getElementById('careers-modal');
+        if (careersModal && !careersModal.classList.contains('hidden')) {
+          return; // Block arrow keys when modal is open
+        }
+        if (e.key in arrowKeys) {
+          e.preventDefault();
+          arrowKeys[e.key] = false;
+          // Check if any arrow key is still pressed
+          isArrowKeyPressed = Object.values(arrowKeys).some(pressed => pressed);
+          
+          // Cancel easter egg if invalid key combinations are detected
+          if (hasInvalidKeyCombination() && easterEggActive) {
+            easterEggActive = false;
+            easterEggStartTime = null;
+            easterEggToastShown = false;
+            easterEggTriggerKeys.clear();
+            ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED;
+          }
+          
+          // Easter egg: Reset if any arrow key is released
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            easterEggTriggerKeys.delete(e.key);
+            // Only reset if no trigger keys are still pressed
+            const hasTriggerKeysPressed = Array.from(easterEggTriggerKeys).some(key => arrowKeys[key]);
+            if (!hasTriggerKeysPressed) {
+              easterEggActive = false;
+              easterEggStartTime = null;
+              easterEggToastShown = false;
+              easterEggTriggerKeys.clear();
+              ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED;
+            }
+          }
+        }
+      });
+
+      // Interactive highlighting for instruction icons
+      const instructionIcons = {
+        scroll: document.querySelector('.instructions-container .instruction-item:first-child .icon-box'),
+        drag: document.querySelector('.instructions-container .instruction-item:nth-child(2) .icon-box'),
+        arrowUp: document.querySelector('.instruction-item-keyboard .icon-box:nth-child(3)'), // rotate(180deg) = up
+        arrowDown: document.querySelector('.instruction-item-keyboard .icon-box:nth-child(4)'), // no rotation = down
+        arrowLeft: document.querySelector('.instruction-item-keyboard .icon-box:nth-child(1)'), // rotate(90deg) = left
+        arrowRight: document.querySelector('.instruction-item-keyboard .icon-box:nth-child(2)') // rotate(-90deg) = right
+      };
+
+      // Highlight scroll icon when scrolling
+      let scrollHighlightTimeout = null;
+      window.addEventListener('wheel', () => {
+        if (instructionIcons.scroll) {
+          instructionIcons.scroll.classList.add('active');
+          clearTimeout(scrollHighlightTimeout);
+          scrollHighlightTimeout = setTimeout(() => {
+            if (instructionIcons.scroll) {
+              instructionIcons.scroll.classList.remove('active');
+            }
+          }, 200);
+        }
+      }, { passive: true });
+
+      // Highlight drag icon when dragging
+      canvas.addEventListener('pointerdown', () => {
+        if (instructionIcons.drag) {
+          instructionIcons.drag.classList.add('active');
+        }
+      });
+
+      canvas.addEventListener('pointerup', () => {
+        if (instructionIcons.drag) {
+          instructionIcons.drag.classList.remove('active');
+        }
+      });
+
+      canvas.addEventListener('pointercancel', () => {
+        if (instructionIcons.drag) {
+          instructionIcons.drag.classList.remove('active');
+        }
+      });
+
+      // Highlight arrow icons when arrow keys are pressed
+      window.addEventListener('keydown', (e) => {
+        const careersModal = document.getElementById('careers-modal');
+        if (careersModal && !careersModal.classList.contains('hidden')) {
+          return; // Block arrow key highlighting when modal is open
+        }
+        if (e.key === 'ArrowUp' && instructionIcons.arrowUp) {
+          instructionIcons.arrowUp.classList.add('active');
+        } else if (e.key === 'ArrowDown' && instructionIcons.arrowDown) {
+          instructionIcons.arrowDown.classList.add('active');
+        } else if (e.key === 'ArrowLeft' && instructionIcons.arrowLeft) {
+          instructionIcons.arrowLeft.classList.add('active');
+        } else if (e.key === 'ArrowRight' && instructionIcons.arrowRight) {
+          instructionIcons.arrowRight.classList.add('active');
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        const careersModal = document.getElementById('careers-modal');
+        if (careersModal && !careersModal.classList.contains('hidden')) {
+          return; // Block arrow key highlighting when modal is open
+        }
+        if (e.key === 'ArrowUp' && instructionIcons.arrowUp) {
+          instructionIcons.arrowUp.classList.remove('active');
+        } else if (e.key === 'ArrowDown' && instructionIcons.arrowDown) {
+          instructionIcons.arrowDown.classList.remove('active');
+        } else if (e.key === 'ArrowLeft' && instructionIcons.arrowLeft) {
+          instructionIcons.arrowLeft.classList.remove('active');
+        } else if (e.key === 'ArrowRight' && instructionIcons.arrowRight) {
+          instructionIcons.arrowRight.classList.remove('active');
+        }
+      });
+
+      // ------------ TOAST SYSTEM ------------
+      const toastContainer = document.getElementById('toast-container');
+      let currentToast = null;
+      let toastIdCounter = 0;
+
+      function createToast(message) {
+        // Immediately remove any existing toast from DOM
+        if (currentToast) {
+          const existingToast = document.getElementById(currentToast);
+          if (existingToast) {
+            existingToast.remove();
+          }
+          currentToast = null;
+        }
+        
+        // Push careers island up if it's visible
+        const careersIsland = document.getElementById('careers-island');
+        if (careersIsland && careersIsland.getAttribute('data-mounted') === 'true') {
+          careersIsland.setAttribute('data-pushed', 'true');
+        }
+        
+        const toastId = `toast-${toastIdCounter++}`;
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.id = toastId;
+        toast.setAttribute('data-mounted', 'false');
+        
+        const content = document.createElement('div');
+        content.className = 'toast-content';
+        content.textContent = message;
+        toast.appendChild(content);
+        
+        toastContainer.appendChild(toast);
+        currentToast = toastId;
+        
+        // Mount toast after render - use double RAF to ensure initial state is rendered
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            toast.setAttribute('data-mounted', 'true');
+          });
+        });
+        
+        // Auto-dismiss after 4 seconds
+        setTimeout(() => {
+          dismissToast(toastId);
+        }, 4000);
+        
+        return toastId;
+      }
+
+      function dismissToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (!toast) return;
+        
+        // Restore careers island immediately when toast starts dismissing
+        const careersIsland = document.getElementById('careers-island');
+        if (careersIsland && careersIsland.getAttribute('data-mounted') === 'true') {
+          careersIsland.setAttribute('data-pushed', 'false');
+        }
+        
+        toast.setAttribute('data-mounted', 'false');
+        setTimeout(() => {
+          toast.remove();
+          if (currentToast === toastId) {
+            currentToast = null;
+          }
+        }, 400);
+      }
+
+      // ------------ LAYOUT ------------
+      function layoutCards() {
+        for (let i = 0; i < cards.length; i++) {
+          const card = cards[i];
+          const label = labels[i];
+
+          const baseX = card.userData.centerX - TILE_W / 2;
+          const baseY = card.userData.centerY - TILE_H / 2;
+
+          let x = baseX + currentOffsetX;
+          let y = baseY + currentOffsetY;
+
+          x = ((x + TILE_W / 2) % TILE_W + TILE_W) % TILE_W - TILE_W / 2;
+          y = ((y + TILE_H / 2) % TILE_H + TILE_H) % TILE_H - TILE_H / 2;
+
+          // Apply parallax: cards move outward from center based on interaction
+          const parallaxX = x * currentDistortion * PARALLAX_STRENGTH;
+          const parallaxY = y * currentDistortion * PARALLAX_STRENGTH;
+          
+          const finalX = x + parallaxX;
+          const finalY = y + parallaxY;
+
+          card.position.set(finalX, finalY, 0);
+          
+          const labelW = label.geometry.parameters.width;
+          const labelH = label.geometry.parameters.height;
+          const thisCardH = card.userData.cardH || CARD_H;
+          const thisCardW = card.userData.cardW || CARD_W;
+          // Bottom-left: label sits just below the card's bottom edge
+          label.position.set(
+            finalX - thisCardW / 2 + labelW / 2,
+            finalY - thisCardH / 2 - labelH / 2 - TEXT_LABEL_GAP,
+            0
+          );
+        }
+      }
+
+      let gridResizeTimeout = null;
+      let lastGridColCount = null;
+      function onResize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+        composer.setSize(width, height);
+        distortionPass.uniforms.resolution.value.set(width, height);
+        
+        if (currentView === 'grid' && gridContainer.classList.contains('visible')) {
+          const w = gridContainer.clientWidth || width;
+          const expectedColCount = w >= 992 ? 5 : w >= 768 ? 4 : w >= 480 ? 3 : 2;
+          if (expectedColCount !== lastGridColCount) {
+            clearTimeout(gridResizeTimeout);
+            gridResizeTimeout = setTimeout(() => {
+              const scrollTop = gridContainer.scrollTop;
+              populateGridView().then(() => {
+                gridContainer.scrollTop = scrollTop;
+                if (lenisInstance) {
+                  lenisInstance.destroy();
+                  lenisInstance = null;
+                }
+                const gridView = gridContainer.querySelector('.grid-view');
+                if (gridView && typeof Lenis !== 'undefined') {
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      lenisInstance = new Lenis({
+                        wrapper: gridContainer,
+                        content: gridView,
+                        duration: 1.2,
+                        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                        smoothWheel: true,
+                        wheelMultiplier: 1,
+                      });
+                      lenisInstance.resize();
+                      function raf(time) {
+                        if (lenisInstance) {
+                          lenisInstance.raf(time);
+                          requestAnimationFrame(raf);
+                        }
+                      }
+                      requestAnimationFrame(raf);
+                    });
+                  });
+                }
+              });
+            }, 150);
+          } else if (lenisInstance) {
+            lenisInstance.resize();
+          }
+        } else if (lenisInstance) {
+          lenisInstance.resize();
+        }
+      }
+      window.addEventListener('resize', onResize);
+
+      // Resize Lenis when loading screen is removed (grid may have been init while loading was on top)
+      document.addEventListener('loadingscreenremoved', () => {
+        if (currentView === 'grid' && lenisInstance) {
+          lenisInstance.resize();
+        }
+      });
+
+      // Resize Lenis when tab becomes visible again (fixes grid scroll after switching tabs)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && currentView === 'grid' && lenisInstance) {
+          lenisInstance.resize();
+        }
+      });
+
+      // ------------ CAREERS MODAL ------------
+      const careersModal = document.getElementById('careers-modal');
+      const careersModalClose = document.querySelector('.careers-modal-close');
+      
+      function closeModal() {
+        careersModal.classList.add('hidden');
+        // Wait for transition to complete before hiding visibility
+        setTimeout(() => {
+          if (careersModal.classList.contains('hidden')) {
+            careersModal.style.visibility = 'hidden';
+          }
+        }, 400);
+        // Clear any active arrow key states when modal closes
+        Object.keys(arrowKeys).forEach(key => {
+          arrowKeys[key] = false;
+        });
+        isArrowKeyPressed = false;
+        // Remove active classes from instruction icons
+        if (instructionIcons.arrowUp) instructionIcons.arrowUp.classList.remove('active');
+        if (instructionIcons.arrowDown) instructionIcons.arrowDown.classList.remove('active');
+        if (instructionIcons.arrowLeft) instructionIcons.arrowLeft.classList.remove('active');
+        if (instructionIcons.arrowRight) instructionIcons.arrowRight.classList.remove('active');
+      }
+      
+      if (careersModalClose) {
+        careersModalClose.addEventListener('click', closeModal);
+      }
+      
+      // Close modal when clicking outside
+      if (careersModal) {
+        careersModal.addEventListener('click', (e) => {
+          if (e.target === careersModal) {
+            closeModal();
+          }
+        });
+      }
+      
+      // Close modal on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && careersModal && !careersModal.classList.contains('hidden')) {
+          closeModal();
+        }
+      });
+
+      // ------------ CAREERS DYNAMIC ISLAND ------------
+      const careersIsland = document.getElementById('careers-island');
+      const careersIslandClose = document.querySelector('.careers-island-close');
+      
+      function closeIsland() {
+        if (careersIsland) {
+          careersIsland.setAttribute('data-mounted', 'false');
+          // Remove from DOM after animation completes
+          setTimeout(() => {
+            if (careersIsland.getAttribute('data-mounted') === 'false') {
+              careersIsland.remove();
+            }
+          }, 400);
+        }
+      }
+      
+      if (careersIslandClose) {
+        careersIslandClose.addEventListener('click', closeIsland);
+      }
+      
+      // Close island on Escape key (non-blocking, so arrow keys still work)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && careersIsland && careersIsland.getAttribute('data-mounted') === 'true') {
+          closeIsland();
+        }
+      });
+
+      // ------------ COORDINATES DISPLAY ------------
+      const coordText = document.getElementById('coord-text');
+      const meridianPath = document.getElementById('meridian');
+      const equatorPath = document.getElementById('equator');
+      
+      // Globe SVG parameters
+      const GLOBE_CX = 21.5;
+      const GLOBE_CY = 21.5;
+      const GLOBE_R = 21;
+      
+      // Convert decimal degrees to DMS format
+      function toDMS(decimal, isLat) {
+        const abs = Math.abs(decimal);
+        const deg = Math.floor(abs);
+        const minFloat = (abs - deg) * 60;
+        const min = Math.floor(minFloat);
+        const sec = (minFloat - min) * 60;
+        
+        const dir = isLat 
+          ? (decimal >= 0 ? 'N' : 'S')
+          : (decimal >= 0 ? 'E' : 'W');
+        
+        const degStr = isLat 
+          ? deg.toString().padStart(2, '0')  // Latitude: 2 digits (00-90)
+          : deg.toString().padStart(3, '0'); // Longitude: 3 digits (000-180)
+        const minStr = min.toString().padStart(2, '0');
+        const secStr = sec.toFixed(2).padStart(5, '0');
+        
+        return `${degStr}° ${minStr}' ${secStr}" ${dir}`;
+      }
+      
+      // Generate meridian path (vertical ellipse arc) based on longitude
+      function getMeridianPath(longitude) {
+        // Linear mapping: longitude directly to position (-1 to 1)
+        // Inverted: as you move east (positive longitude), meridian moves west (left)
+        const lonNorm = -longitude / 180;
+        
+        // X position of the meridian
+        const x = GLOBE_CX + lonNorm * GLOBE_R;
+        
+        // Calculate where the meridian intersects the circle (top and bottom)
+        const clampedNorm = Math.max(-1, Math.min(1, lonNorm));
+        const dy = Math.sqrt(Math.max(0, GLOBE_R * GLOBE_R - (clampedNorm * GLOBE_R) ** 2));
+        const yTop = GLOBE_CY - dy;
+        const yBottom = GLOBE_CY + dy;
+        
+        // The curve bulges toward the nearest edge
+        // At center (lonNorm=0): no bulge (straight line)
+        // At edges (lonNorm=±1): maximum bulge following the circle
+        const bulgeFactor = Math.abs(clampedNorm);
+        const bulgeDir = lonNorm >= 0 ? 1 : -1;
+        const bulgeAmount = bulgeFactor * GLOBE_R * 0.55;
+        
+        const cx = x + bulgeDir * bulgeAmount;
+        
+        return `M${x.toFixed(1)} ${yTop.toFixed(1)}Q${cx.toFixed(1)} ${GLOBE_CY} ${x.toFixed(1)} ${yBottom.toFixed(1)}`;
+      }
+      
+      // Generate equator path (horizontal ellipse arc) based on latitude
+      function getEquatorPath(latitude) {
+        // Linear mapping: latitude directly to position (-1 to 1)
+        // Inverted: as you move north (positive latitude), equator moves south (down)
+        const latNorm = -latitude / 90;
+        
+        // Y position of the parallel
+        const y = GLOBE_CY - latNorm * GLOBE_R;
+        
+        // Calculate where the parallel intersects the circle (left and right)
+        const clampedNorm = Math.max(-1, Math.min(1, latNorm));
+        const dx = Math.sqrt(Math.max(0, GLOBE_R * GLOBE_R - (clampedNorm * GLOBE_R) ** 2));
+        const xLeft = GLOBE_CX - dx;
+        const xRight = GLOBE_CX + dx;
+        
+        // The curve bulges toward the nearest pole (top or bottom)
+        // At equator (latNorm=0): no bulge (straight line)
+        // At poles (latNorm=±1): maximum bulge
+        const bulgeFactor = Math.abs(clampedNorm);
+        const bulgeDir = latNorm >= 0 ? -1 : 1;
+        const bulgeAmount = bulgeFactor * GLOBE_R * 0.55;
+        
+        const cy = y + bulgeDir * bulgeAmount;
+        
+        return `M${xLeft.toFixed(1)} ${y.toFixed(1)}Q${GLOBE_CX} ${cy.toFixed(1)} ${xRight.toFixed(1)} ${y.toFixed(1)}`;
+      }
+      
+      function updateCoordinates() {
+        // Normalize position within tile (0 to 1)
+        const normX = ((currentOffsetX % TILE_W) + TILE_W) % TILE_W / TILE_W;
+        const normY = ((currentOffsetY % TILE_H) + TILE_H) % TILE_H / TILE_H;
+        
+        // Map to globe coordinates
+        const longitude = (1 - normX) * 360 - 180;
+        const latitude = (1 - normY) * 180 - 90;
+        
+        // Format as DMS
+        const latStr = toDMS(latitude, true);
+        const lonStr = toDMS(longitude, false);
+        
+        coordText.textContent = `${latStr} ${lonStr}`;
+        
+        // Update globe SVG paths
+        meridianPath.setAttribute('d', getMeridianPath(longitude));
+        equatorPath.setAttribute('d', getEquatorPath(latitude));
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        
+        // Only run Three.js animation when Three.js view is active
+        if (currentView !== 'threejs') return;
+
+        // Update offset based on arrow keys (only if modal is not open)
+        const careersModal = document.getElementById('careers-modal');
+        const isModalOpen = careersModal && !careersModal.classList.contains('hidden');
+        
+        // Easter egg: Gradually increase then decrease speed for any arrow key
+        const hasAnyArrowKeyPressed = arrowKeys.ArrowRight || arrowKeys.ArrowDown || arrowKeys.ArrowLeft || arrowKeys.ArrowUp;
+        if (easterEggActive && easterEggStartTime && hasAnyArrowKeyPressed) {
+          // Cancel easter egg if invalid key combinations are pressed
+          if (hasInvalidKeyCombination()) {
+            easterEggActive = false;
+            easterEggStartTime = null;
+            easterEggToastShown = false;
+            easterEggTriggerKeys.clear();
+            ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED;
+            return;
+          }
+          
+          const elapsed = Date.now() - easterEggStartTime;
+          const totalDuration = EASTER_EGG_INCREASE_DURATION + EASTER_EGG_DECREASE_DURATION;
+          
+          let speedMultiplier;
+          
+          if (elapsed < EASTER_EGG_INCREASE_DURATION) {
+            // Phase 1: Increase speed gradually
+            const increaseProgress = elapsed / EASTER_EGG_INCREASE_DURATION;
+            speedMultiplier = 1 + (increaseProgress * (MAX_SPEED_MULTIPLIER - 1));
+          } else if (elapsed < totalDuration) {
+            // Phase 2: Decrease speed gradually
+            const decreaseProgress = (elapsed - EASTER_EGG_INCREASE_DURATION) / EASTER_EGG_DECREASE_DURATION;
+            speedMultiplier = MAX_SPEED_MULTIPLIER - (decreaseProgress * (MAX_SPEED_MULTIPLIER - 1));
+            
+            // Show toast with delay after decrease starts
+            const timeSinceDecreaseStart = elapsed - EASTER_EGG_INCREASE_DURATION;
+            if (timeSinceDecreaseStart >= EASTER_EGG_TOAST_DELAY && !easterEggToastShown) {
+              easterEggToastShown = true;
+              easterEggLastToastTime = Date.now();
+              createToast("Whoa there, feeling dizzy yet? 😵‍💫");
+            }
+          } else {
+            // Phase 3: Decrease phase complete
+            // Check if toast was shown and user is still holding the same keys
+            const currentlyPressedKeys = new Set();
+            if (arrowKeys.ArrowRight) currentlyPressedKeys.add('ArrowRight');
+            if (arrowKeys.ArrowDown) currentlyPressedKeys.add('ArrowDown');
+            if (arrowKeys.ArrowLeft) currentlyPressedKeys.add('ArrowLeft');
+            if (arrowKeys.ArrowUp) currentlyPressedKeys.add('ArrowUp');
+            
+            const isHoldingSameKeys = easterEggToastShown && 
+              currentlyPressedKeys.size === easterEggTriggerKeys.size &&
+              [...currentlyPressedKeys].every(key => easterEggTriggerKeys.has(key));
+            
+            if (isHoldingSameKeys) {
+              // Keep base speed if holding same keys after decrease completes
+              speedMultiplier = 1;
+            } else {
+              // Reset easter egg if different keys or keys released
+              speedMultiplier = 1;
+              easterEggActive = false;
+              easterEggStartTime = null;
+              easterEggToastShown = false;
+              easterEggTriggerKeys.clear();
+            }
+          }
+          
+          ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED * speedMultiplier;
+        } else if (!easterEggActive) {
+          ARROW_KEY_SPEED = BASE_ARROW_KEY_SPEED;
+        }
+        
+        if (isArrowKeyPressed && !isModalOpen) {
+          if (arrowKeys.ArrowLeft) targetOffsetX += ARROW_KEY_SPEED;
+          if (arrowKeys.ArrowRight) targetOffsetX -= ARROW_KEY_SPEED;
+          if (arrowKeys.ArrowUp) targetOffsetY -= ARROW_KEY_SPEED;
+          if (arrowKeys.ArrowDown) targetOffsetY += ARROW_KEY_SPEED;
+        }
+
+        currentOffsetX += (targetOffsetX - currentOffsetX) * LERP;
+        currentOffsetY += (targetOffsetY - currentOffsetY) * LERP;
+
+        const dx = currentOffsetX - prevOffsetX;
+        const dy = currentOffsetY - prevOffsetY;
+        
+        const velocity = Math.sqrt(dx * dx + dy * dy);
+        prevOffsetX = currentOffsetX;
+        prevOffsetY = currentOffsetY;
+
+        // Distortion
+        let targetDistortion = 0;
+        if (isDragging || isArrowKeyPressed) {
+          targetDistortion = DRAG_DISTORTION;
+        } else if (isScrolling) {
+          targetDistortion = Math.min(velocity * VELOCITY_SCALE, MAX_SCROLL_DISTORTION);
+        }
+        currentDistortion += (targetDistortion - currentDistortion) * DISTORTION_LERP;
+        distortionPass.uniforms.strength.value = currentDistortion;
+
+        // Edge blur (velocity-based for scroll, fixed for drag and arrow keys)
+        let targetBlur = 0;
+        if (isDragging || isArrowKeyPressed) {
+          targetBlur = DRAG_BLUR;
+        } else if (isScrolling) {
+          targetBlur = Math.min(velocity * BLUR_VELOCITY_SCALE, MAX_SCROLL_BLUR);
+        }
+        currentBlur += (targetBlur - currentBlur) * BLUR_LERP;
+        distortionPass.uniforms.blurAmount.value = currentBlur;
+
+        // Dizzy toast: full tremble for 1s, then smooth decay to zero
+        const now = performance.now() * 0.001;
+        distortionPass.uniforms.uTime.value = now;
+
+        if (currentView === 'threejs' && easterEggToastShown) {
+          if (!window._trembleStart) window._trembleStart = now;
+          const t = now - window._trembleStart;
+          const HOLD = 1.0;   // seconds at full intensity
+          const amplitude = t < HOLD ? 1.0 : Math.exp(-3.0 * (t - HOLD));
+          const upDown = arrowKeys.ArrowUp || arrowKeys.ArrowDown;
+          const leftRight = arrowKeys.ArrowLeft || arrowKeys.ArrowRight;
+          // Up/down or diagonal → horizontal tremble (X). Left/right only → vertical tremble (Y).
+          distortionPass.uniforms.uTrembleX.value = upDown ? amplitude : (leftRight ? 0 : amplitude);
+          distortionPass.uniforms.uTrembleY.value = leftRight && !upDown ? amplitude : 0;
+        } else {
+          window._trembleStart = null;
+          distortionPass.uniforms.uTrembleX.value = 0;
+          distortionPass.uniforms.uTrembleY.value = 0;
+        }
+
+        // Update coordinates display
+        updateCoordinates();
+
+        layoutCards();
+        composer.render();
+      }
+
+      
+      init().then(() => {
+        applyViewportView();
+        animate();
+      });
+      window.addEventListener('resize', applyViewportView);
+    </script>
+  </body>
+</html>
