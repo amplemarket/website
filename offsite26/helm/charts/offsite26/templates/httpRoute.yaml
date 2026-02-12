@@ -1,0 +1,93 @@
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: {{ template "offsite26.fullname" $ }}-external-auth-server
+  namespace: envoy-gateway
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: {{ .Release.Namespace }}
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: {{ .Release.Namespace }}
+  to:
+    - group: ""
+      kind: Service
+
+{{- $serviceName := include "offsite26.fullname" . -}}
+{{- if and .Values.httpRoute .Values.httpRoute.enabled -}}
+
+{{- range $route, $route_config := .Values.httpRoute.routes }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ template "offsite26.fullname" $ }}-{{ $route_config.name }}
+  labels:
+    app: {{ template "offsite26.name" $ }}
+    app.kubernetes.io/name: {{ template "offsite26.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      {{- if eq $route_config.placement "public" }}
+      name: envoyext00
+      {{- else if eq $route_config.placement "private" }}
+      name: envoyint00
+      {{- end }}
+      namespace: envoy-gateway
+  hostnames:
+{{ toYaml $route_config.hostnames | indent 4 }}
+  rules:
+{{- range $index, $rule_config := $route_config.rules }}
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ coalesce $rule_config.serviceName $serviceName }}
+          port: {{ $rule_config.port }}
+          weight: {{ add $index 1 }}
+      matches:
+        - path:
+            type: {{ $rule_config.type }}
+            value: {{ $rule_config.path }}
+      filters:
+{{ toYaml $rule_config.filters | indent 8 }}
+      timeouts:
+{{ toYaml $rule_config.timeouts | indent 8 }}
+{{ end }}
+
+{{- if $route_config.easAuthEnabled -}}
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: {{ template "offsite26.fullname" $ }}-{{ $route_config.name }}-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: {{ template "offsite26.fullname" $ }}-{{ $route_config.name }}
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-host
+      - x-forwarded-method
+      - x-forwarded-proto
+      - x-forwarded-uri
+    http:
+      path: "/verify?config_token_store_id=main_store&config_token_id=envoy&envoyhack=ignore"
+      backendRefs:
+        - name: external-auth-server
+          namespace: envoy-gateway
+          port: 8080
+      headersToBackend: ["X-Id-Token", "X-Userinfo", "X-Access-Token"]
+{{ end }}
+
+{{ end }}
+{{ end }}

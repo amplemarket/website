@@ -1,0 +1,48 @@
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read
+
+name: Build & Deploy
+on:
+  workflow_dispatch:
+  push:
+    branches: master
+
+env:
+  HELM_CHART_NAME: offsite26
+  K8S_ENVIRONMENT: management
+  K8S_NAMESPACE: platform
+  DOCKER_IMAGE_NAME: gcr.io/amplmkt-mgmt/offsite26
+
+jobs:
+  build:
+    name: Build & Push Docker Image
+    runs-on: amplmkt-mgmt-usce1-gke00
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        working-directory: offsite26
+        run: |
+          make docker-build
+          docker tag offsite26:latest ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: amplmkt-mgmt-usce1-gke00
+    needs: ["build"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: k8s-deploy
+        uses: amplemarket/github-actions/k8s-deploy@v2.0.10
+        with:
+          chart-name: ${{ env.HELM_CHART_NAME }}
+          image-tag: ${{ github.sha }}
+          namespace: ${{ env.K8S_NAMESPACE }}
+          environment: ${{ env.K8S_ENVIRONMENT }}
+          region: us-central1
+          cluster-id: gke00
