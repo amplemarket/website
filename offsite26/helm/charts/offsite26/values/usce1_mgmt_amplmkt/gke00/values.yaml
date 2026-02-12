@@ -1,0 +1,15 @@
+---
+gke_cluster_id: "gke00"
+replicaCount: 2
+
+httpRoute:
+  enabled: true
+  routes:
+    - name: external
+      placement: public
+      hostnames:
+        - offsite26.amplemarket.com
+      rules:
+        - type: PathPrefix
+          path: /
+          port: 80

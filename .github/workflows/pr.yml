@@ -1,0 +1,23 @@
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read
+
+name: Build
+on:
+  workflow_dispatch:
+  pull_request:
+
+env:
+  DOCKER_IMAGE_NAME: gcr.io/amplmkt-mgmt/offsite26
+
+jobs:
+  build:
+    name: Build & Push Docker Image
+    runs-on: amplmkt-mgmt-usce1-gke00
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        working-directory: offsite26
+        run: make docker-build

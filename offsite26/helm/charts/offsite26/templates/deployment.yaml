@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "offsite26.fullname" . }}
+  labels:
+    app: {{ template "offsite26.name" . }}
+    app.kubernetes.io/name: {{ template "offsite26.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    environment: {{ .Values.environment }}
+    namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "offsite26.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "offsite26.name" . }}
+        release: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ template "offsite26.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        environment: {{ .Values.environment }}
+        namespace: {{ .Release.Namespace }}
+        deployTime: "{{ date "20060102150405" .Release.Time }}"
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+
+          ports:
+            {{- range $port, $portConfig := .Values.service.ports }}
+            - name: "{{ $port }}"
+              containerPort: {{ $portConfig.targetPort }}
+            {{- end }}
+
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 20
+            timeoutSeconds: 20
+            initialDelaySeconds: 5
+            tcpSocket:
+              port: {{ .Values.configs.server_port }}
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 10
+            initialDelaySeconds: 5
+            tcpSocket:
+              port: {{ .Values.configs.server_port }}

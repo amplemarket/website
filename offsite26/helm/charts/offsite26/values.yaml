@@ -1,0 +1,16 @@
+---
+image:
+  name: gcr.io/amplmkt-mgmt/offsite26
+  tag: 0.0.1
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  ports:
+    api:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+
+configs:
+  server_port: 80

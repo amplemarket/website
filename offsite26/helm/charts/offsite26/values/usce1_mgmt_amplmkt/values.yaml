@@ -1,0 +1,8 @@
+---
+gcp_organization_id: "64118011607"
+gcp_project_name: "amplmkt-mgmt"
+gcp_namespace: "amplmkt"
+gcp_region: "us-central1"
+gcp_region_short: "usce1"
+environment: "management"
+environment_short: "mgmt"
